@@ -1,0 +1,31 @@
+IMPLEMENT THE KEPLOR V3 REDESIGN AND MIGRATE LIVE-SITE CONTENT/FUNCTIONALITY
+
+Read `KEPLOR_V3_LIVE_SITE_MIGRATION_PLAN.md`, `design/KEPLOR_DESIGN_DIRECTION_V3.md`, and the company/competitor reference documents in full before changing code. V3 is the single approved design direction and supersedes all earlier V2 mockups.
+
+VISUAL SOURCE OF TRUTH
+- The original Canva examples in `design/canva-references/` define the intended visual language.
+- `design/prototype/reference-aligned-full-page-v3.png` defines full-page composition and alignment.
+- `design/prototype/reference-aligned-hero-v3.png` defines hero treatment.
+- `design/KEPLOR_DESIGN_DIRECTION_V3.md` defines typography, palette, spacing, forbidden patterns, and scroll motion.
+- `design/prototype/index.html` is an illustrative prototype only. Do not replace the real application with this standalone file.
+
+The intended result is a minimal, spatial, dark, confident website: near-black canvas, oversized modern sans-serif type, generous breathing space, sparse navigation, fine dividers, and broad, soft, objectless blue/cyan/violet light fields. The diffuse light itself is the artwork. Do NOT use planets, moons, hard-edged spheres/orbs, orbital rings, starfields, point-cloud globes, particle constellations, mountains, sculptures, floating dashboards, dense grids, crowded bento cards, or serif-led editorial layouts. Do not return to older concepts.
+
+BUSINESS CONTENT AND LIVE SITE
+Treat the founder-provided company blueprint as authoritative for Keplor's four service pillars, five target industries, mission, vision, and target audiences. Treat the local repository as the source of truth for actual code, integrations, data, routing, and working functionality. Treat `https://keplor.tech/` and its linked pages as a live content/route inventory; recheck them and the repository before implementation. Consult `research/COMPETITOR_INTELLIGENCE_REPORT.md` and `research/REFERENCE_REVIEW_STITCH_LIUM.md` for differentiation and content structure, not claims to copy.
+
+Preserve the existing company's core positioning, relevant original wording, all useful routes, and all genuine working functionality. Do not change the business into a different product, but align product-specific copy to the broader AI/ML and software-solutions blueprint where supported. Do not expose team size or frame the brand as inexperienced. Do not invent customers, metrics, client logos, case studies, testimonials, funding, certifications, uptime promises, team biographies, open jobs, product capabilities, API/SDK functionality, response-time SLAs, offices, or public pricing. Verify or remove questionable claims. The `/pricing` URL must remain functional but must not display public prices or fake trial offers; route it to a truthful project/contact conversation. Verify email addresses and contact destinations; do not fake form success when no submission backend exists.
+
+REQUIRED WORKFLOW
+1. Inspect the entire repository, Git status/diff, scripts, architecture, routes, content/data, forms, integrations, APIs, analytics, and navigation/footer destinations. Preserve uncommitted/user changes.
+2. Recheck public live routes including `/`, `/features`, `/pricing`, `/about`, `/blog`, `/careers`, `/documentation`, `/contact`, plus discovered `/api`, legal, social, or other links. Produce a migration inventory distinguishing working features, static placeholders, broken paths, and unsupported claims.
+3. Implement V3 inside the existing architecture. Do not replace the project with a static mockup. Keep the original logo and brand-purple anchor `#36006D`.
+4. Preserve and clearly structure the four services: AI & Machine Learning; Custom Software Development; Cloud Solutions; Research & Analytics. Include Healthcare, Finance, Education, Retail & E-Commerce, and Manufacturing with blueprint examples accurately framed as illustrative use cases, not confirmed deployments.
+5. Retain existing URLs and query behavior where possible. Apply route-by-route guidance in the migration plan; no dead links or inert buttons. Keep genuine blog/docs/careers functionality only where backed by real content and working systems.
+6. Implement motion with a light touch: page-load opacity/translate reveal around 700–1000ms; 50–80ms stagger; ambient gradient drift around 18–35s; modest scroll-linked light position/scale/hue changes; 12–24px section reveals over 500–800ms; one process-line draw; restrained hover transitions; no scroll hijacking or long pinned scenes. Use CSS gradients/clip/Canvas or lightweight techniques unless stronger rendering is materially necessary. Respect `prefers-reduced-motion`.
+7. Ensure responsive composition and alignment at 1440px, 1920px, and 390px; preserve readability, keyboard access, focus states, contrast, and no horizontal overflow.
+8. Run the app, capture and inspect actual browser screenshots, compare to V3 and original Canva images, test all routes, links, query strings, back/forward navigation, forms, search/filter, modal, code-copy, keyboard, and reduced-motion behavior. Run production build and available lint/type/tests. If browser inspection is unavailable, state so honestly.
+9. Fix visual/functional regressions and inspect again. Do not stop at planning or restyling only the hero.
+10. Report routes changed, functionality preserved/changed/removed, unsupported claims handled, files modified, checks actually performed, and unresolved items.
+
+Do not ask the founder to choose between V2 and V3. V3 is final. Implement it in the real repository, preserve genuine functionality, and report only work that was actually completed and tested.
