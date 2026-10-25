@@ -1,26 +1,2 @@
-import Header from '@/components/sections/Header';
-import Footer from '@/components/sections/Footer';
-import AboutHero from '@/components/about/AboutHero';
-import AboutMission from '@/components/about/AboutMission';
-import AboutTeam from '@/components/about/AboutTeam';
-import AboutValues from '@/components/about/AboutValues';
-import AboutTimeline from '@/components/about/AboutTimeline';
-
-export const metadata = {
-  title: 'About - Keplor AI SaaS Platform',
-  description: 'Learn about Keplor\'s mission to democratize AI technology and meet the team building the future of intelligent software.',
-};
-
-export default function AboutPage() {
-  return (
-    <main className="min-h-screen">
-      <Header />
-      <AboutHero />
-      <AboutMission />
-      <AboutValues />
-      <AboutTeam />
-      <AboutTimeline />
-      <Footer />
-    </main>
-  );
-}
+import { Hero } from '@/components/keplor/PageBlocks';
+export default function AboutPage() { return <main><Hero eyebrow="About Keplor" title="Independent by design." body="Keplor is an AI/ML and software-solutions company focused on helping organisations make thoughtful use of technology." /><section className="section-wrap section-wrap--line"><p className="eyebrow">Mission</p><h2>To empower businesses across sectors through AI/ML technologies and custom software solutions that support innovation, efficiency, and growth.</h2><p className="eyebrow">Vision</p><h2>To become a global leader in AI/ML-driven software solutions, helping businesses navigate the digital future with intelligent, scalable, data-informed strategies.</h2></section></main>; }

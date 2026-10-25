@@ -1,12 +1,10 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
+import { SiteShell } from '@/components/keplor/SiteShell';
 
 export const metadata: Metadata = {
-  title: 'Keplor - AI SaaS Solutions for Everyone',
-  description: 'Intelligent AI tools for creators, businesses, and learners. Cloud-native, secure, and scalable solutions.',
+  title: 'Keplor — Intelligent systems, built around your business',
+  description: 'Keplor designs AI/ML, software, cloud, and analytics systems around real business needs.',
 };
 
 export default function RootLayout({
@@ -15,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={inter.className}>{children}</body>
+    <html lang="en">
+      <body><SiteShell>{children}</SiteShell></body>
     </html>
   );
 }

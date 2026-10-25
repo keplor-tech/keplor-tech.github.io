@@ -1,24 +1,3 @@
-import Header from '@/components/sections/Header';
-import Footer from '@/components/sections/Footer';
-import PricingHero from '@/components/pricing/PricingHero';
-import PricingPlans from '@/components/pricing/PricingPlans';
-import PricingFAQ from '@/components/pricing/PricingFAQ';
-import PricingCTA from '@/components/pricing/PricingCTA';
-
-export const metadata = {
-  title: 'Pricing - Keplor AI SaaS Platform',
-  description: 'Choose the perfect Keplor plan for your needs. Flexible pricing for creators, businesses, and enterprises with 14-day free trial.',
-};
-
-export default function PricingPage() {
-  return (
-    <main className="min-h-screen">
-      <Header />
-      <PricingHero />
-      <PricingPlans />
-      <PricingFAQ />
-      <PricingCTA />
-      <Footer />
-    </main>
-  );
-}
+import Link from 'next/link';
+import { Hero } from '@/components/keplor/PageBlocks';
+export default function PricingPage() { return <main><Hero eyebrow="Engagements" title="No public price list. No one-size-fits-all promise." body="Scope, data, risk, and delivery needs shape the right engagement. Start a conversation for an honest discussion of fit and next steps." /><section className="section-wrap section-wrap--line"><p className="hero__body">Keplor does not publish pricing tiers or trial claims. <Link className="text-link" href="/contact">Start a conversation ↗</Link></p></section></main>; }

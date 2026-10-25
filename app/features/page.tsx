@@ -1,24 +1,2 @@
-import Header from '@/components/sections/Header';
-import Footer from '@/components/sections/Footer';
-import FeaturesHero from '@/components/features/FeaturesHero';
-import FeaturesList from '@/components/features/FeaturesList';
-import FeatureComparison from '@/components/features/FeatureComparison';
-import FeatureCTA from '@/components/features/FeatureCTA';
-
-export const metadata = {
-  title: 'Features - Keplor AI SaaS Platform',
-  description: 'Explore Keplor\'s comprehensive AI features including intelligent agents, cloud-native architecture, enterprise security, and advanced analytics.',
-};
-
-export default function FeaturesPage() {
-  return (
-    <main className="min-h-screen">
-      <Header />
-      <FeaturesHero />
-      <FeaturesList />
-      <FeatureComparison />
-      <FeatureCTA />
-      <Footer />
-    </main>
-  );
-}
+import { Hero, ServicesBlock } from '@/components/keplor/PageBlocks';
+export default function FeaturesPage() { return <main><Hero eyebrow="Features / compatibility" title="Capabilities, not a product checklist." body="The former features route now points visitors toward Keplor's actual service blueprint without claiming an unsupported self-serve SaaS product." /><ServicesBlock /></main>; }
