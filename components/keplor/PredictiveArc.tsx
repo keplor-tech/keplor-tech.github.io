@@ -1,291 +1,256 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion, useScroll, useTransform } from 'framer-motion';
+
+const VERT = `
+attribute vec2 a_pos;
+void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+`;
+
+// Original luminous horizon arc: violet/cyan ring segment with a hot core,
+// soft volumetric falloff and a subtle quantized pixel-lattice shimmer.
+const FRAG = `
+precision highp float;
+
+uniform vec2  u_res;
+uniform float u_time;
+uniform vec2  u_pointer;   // 0..1 within the canvas
+uniform float u_scroll;    // 0..1 page progress
+uniform float u_fade;      // entrance fade 0..1
+
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
+
+float noise(vec2 p){
+  vec2 i = floor(p), f = fract(p);
+  f = f*f*(3.0-2.0*f);
+  return mix(mix(hash(i), hash(i+vec2(1,0)), f.x),
+             mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y);
+}
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res.xy;          // 0..1
+  vec2 p  = uv - 0.5;                            // centered
+  p.x *= u_res.x / u_res.y;                      // keep circle round
+
+  float t = u_time;
+
+  // --- Arc geometry: a ring segment (horizon arc) ---
+  float r     = length(p);
+  float angle = atan(p.y, p.x);
+
+  // Gentle autonomous breathing + pointer influence on radius
+  float breathe  = 0.012 * sin(t * 0.6);
+  float pointerPull = 0.02 * (u_pointer.y - 0.5) * smoothstep(0.6, 0.0, r);
+  float radius   = 0.34 + breathe + pointerPull;
+
+  // Arc band: thin luminous ring, brighter on the upper sweep
+  float band     = abs(r - radius);
+  float arcMask  = smoothstep(0.045, 0.0, band);
+
+  // Restrict to a sweeping arc (upper-right dominant, like a horizon)
+  float sweep    = smoothstep(-2.6, -0.6, angle) * smoothstep(2.9, 1.2, angle);
+  float arc      = arcMask * mix(0.35, 1.0, sweep);
+
+  // --- Hot core: soft inner glow, drifts subtly with pointer ---
+  vec2 coreC = vec2(0.03 * sin(t*0.4), 0.02 * cos(t*0.5)) + (u_pointer - 0.5) * 0.06;
+  float core = exp(-length(p - coreC) * 5.5);
+
+  // --- Volumetric inner fill (deep brand purple) ---
+  float fill = smoothstep(radius, 0.0, r) * 0.55;
+
+  // --- Pixel lattice shimmer along the arc ---
+  vec2  cell   = floor(uv * u_res.y / 6.0);
+  float lattice= step(0.82, hash(cell + floor(t*2.0))) * arcMask * 0.35;
+
+  // --- Palette ---
+  vec3 deepPurple = vec3(0.212, 0.000, 0.427);  // #36006D
+  vec3 violet     = vec3(0.545, 0.365, 0.965);  // #8B5CF6
+  vec3 cyan       = vec3(0.133, 0.827, 0.933);  // #22D3EE
+  vec3 magenta    = vec3(0.933, 0.282, 0.933);
+
+  vec3 col = vec3(0.0);
+
+  // Inner fill: deep purple rising toward violet at the rim
+  col += fill * mix(deepPurple, violet * 0.55, smoothstep(0.0, radius, r));
+
+  // Arc: violet base with cyan on the bright sweep
+  col += arc * violet * 1.15;
+  col += arc * sweep * cyan * 0.85;
+
+  // Hot core: white-violet with a magenta kiss
+  col += core * vec3(0.95, 0.85, 1.0) * 1.6;
+  col += core * core * magenta * 0.8;
+
+  // Lattice sparkle
+  col += lattice * cyan * 0.6;
+
+  // Soft outer bloom around the arc
+  col += smoothstep(0.16, 0.0, band) * violet * 0.22;
+
+  // Scroll: gently sink + dim the whole form
+  col *= 1.0 - u_scroll * 0.35;
+  col *= u_fade;
+
+  float alpha = clamp(max(max(col.r, col.g), col.b) * 1.4, 0.0, 0.9);
+  gl_FragColor = vec4(col, alpha);
+}
+`;
+
+function compile(gl: WebGLRenderingContext, type: number, src: string): WebGLShader | null {
+  const sh = gl.createShader(type);
+  if (!sh) return null;
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+    console.error('[PredictiveArc] shader error:', gl.getShaderInfoLog(sh));
+    gl.deleteShader(sh);
+    return null;
+  }
+  return sh;
+}
 
 export function PredictiveArc() {
   const reduced = useReducedMotion();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [webglSupported, setWebglSupported] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [mode, setMode] = useState<'pending' | 'webgl' | 'fallback'>('pending');
   const { scrollYProgress } = useScroll();
-
-  const scrollY = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const scrollRef = useRef(0);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    const unsub = scrollYProgress.on('change', (v) => { scrollRef.current = v; });
+    return () => unsub();
+  }, [scrollYProgress]);
 
-  const init = useCallback(() => {
+  useEffect(() => {
+    if (reduced) { setMode('fallback'); return; }
+    if (mode !== 'pending') return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-    if (reduced) {
-      setWebglSupported(false);
+
+    const gl = canvas.getContext('webgl', { alpha: true, antialias: false, premultipliedAlpha: false });
+    if (!gl) { setMode('fallback'); return; }
+
+    const vs = compile(gl, gl.VERTEX_SHADER, VERT);
+    const fs = compile(gl, gl.FRAGMENT_SHADER, FRAG);
+    if (!vs || !fs) { setMode('fallback'); return; }
+
+    const prog = gl.createProgram();
+    if (!prog) { setMode('fallback'); return; }
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      console.error('[PredictiveArc] link error:', gl.getProgramInfoLog(prog));
+      setMode('fallback');
       return;
     }
+    gl.useProgram(prog);
 
-    const gl = canvas.getContext('webgl', { alpha: true, antialias: true });
-    if (!gl) {
-      setWebglSupported(false);
-      return;
-    }
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'a_pos');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
-    // Cap device pixel ratio for performance
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    const uRes      = gl.getUniformLocation(prog, 'u_res');
+    const uTime     = gl.getUniformLocation(prog, 'u_time');
+    const uPointer  = gl.getUniformLocation(prog, 'u_pointer');
+    const uScroll   = gl.getUniformLocation(prog, 'u_scroll');
+    const uFade     = gl.getUniformLocation(prog, 'u_fade');
 
-    // Vertex shader — simple full-screen quad
-    const vsSource = `
-      attribute vec2 position;
-      void main() {
-        gl_Position = vec4(position, 0.0, 1.0);
-      }
-    `;
+    const DPR_CAP = 1.75;
+    let raf = 0;
+    let running = false;
+    let visible = true;
+    let inPage = !document.hidden;
+    let fade = 0;
 
-    // Fragment shader — sweeping violet/cyan luminous horizon arc with hot core
-    const fsSource = `
-      precision highp float;
-      uniform vec2 u_resolution;
-      uniform vec2 u_pointer;
-      uniform float u_time;
-      uniform float u_scroll;
-      uniform float u_pixel;
+    const px = { cur: 0.5, tgt: 0.5 };
+    const py = { cur: 0.5, tgt: 0.5 };
 
-      // Simple hash
-      float hash(vec2 p) {
-        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-      }
-
-      // Noise
-      float noise(vec2 p) {
-        vec2 i = floor(p);
-        vec2 f = fract(p);
-        f = f * f * (3.0 - 2.0 * f);
-        return mix(
-          mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
-          mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
-          f.y
-        );
-      }
-
-      void main() {
-        vec2 uv = gl_FragCoord.xy / u_resolution.xy;
-        uv.x *= u_resolution.x / u_resolution.y;
-
-        // Pointer distance field
-        vec2 p = uv - u_pointer;
-        float d = length(p);
-
-        // Time-based autonomous wave
-        float t = u_time * 0.5;
-        float wave = sin(uv.x * 6.0 + t) * 0.5 + 0.5;
-        float arcY = 0.5 + wave * 0.12 + sin(uv.x * 3.0 + t * 0.7) * 0.06;
-
-        // Scroll shifts arc position vertically
-        arcY += u_scroll * 0.15;
-
-        // Main arc — sweeping horizon
-        float arc = smoothstep(0.025, 0.0, abs(uv.y - arcY));
-        arc *= smoothstep(0.0, 0.02, abs(uv.y - arcY));
-
-        // Hot core at pointer proximity
-        float core = exp(-d * 12.0);
-        core = pow(core, 2.0);
-
-        // Pixel lattice detail (subtle quantized effect)
-        float lattice = floor(uv.x * u_pixel) / u_pixel;
-        float latticeY = floor(uv.y * u_pixel) / u_pixel;
-        float pixelDetail = sin(lattice * 50.0 + t) * sin(latticeY * 50.0 + t) * 0.03;
-
-        // Colors: brand purple foundation, violet/cyan arc, magenta highlights
-        vec3 deepPurple = vec3(0.212, 0.0, 0.427);   // #36006D
-        vec3 violet = vec3(0.545, 0.533, 0.969);     // #8B5CF6-ish
-        vec3 cyan = vec3(0.133, 0.827, 0.933);       // #22D3EE-ish
-        vec3 magenta = vec3(0.933, 0.282, 0.933);    // magenta highlight
-
-        vec3 color = deepPurple;
-
-        // Arc glow
-        color += arc * vec3(0.4, 0.3, 0.9) * 1.5;
-        color += arc * cyan * 0.8;
-
-        // Core glow near pointer
-        color += core * vec3(1.0, 0.9, 1.0) * 2.0;
-        color += core * magenta * 0.6;
-
-        // Subtle pixel lattice
-        color += pixelDetail * vec3(0.3, 0.2, 0.5);
-
-        // Vignette — darker at edges
-        float vignette = 1.0 - length(uv - 0.5) * 0.8;
-        color *= vignette;
-
-        // Alpha — subtle on near-black canvas
-        float alpha = 0.5 + arc * 0.3 + core * 0.4;
-        alpha = clamp(alpha, 0.0, 0.85);
-
-        gl_FragColor = vec4(color, alpha);
-      }
-    `;
-
-    // Compile shaders
-    const compile = (type: number, source: string): WebGLShader | null => {
-      const shader = gl.createShader(type);
-      if (!shader) return null;
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error(gl.getShaderInfoLog(shader));
-        gl.deleteShader(shader);
-        return null;
-      }
-      return shader;
-    };
-
-    const vertexShader = compile(gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = compile(gl.FRAGMENT_SHADER, fsSource);
-
-    if (!vertexShader || !fragmentShader) {
-      if (vertexShader) gl.deleteShader(vertexShader);
-      if (fragmentShader) gl.deleteShader(fragmentShader);
-      setWebglSupported(false);
-      return;
-    }
-
-    const program = gl.createProgram();
-    if (!program) {
-      gl.deleteShader(vertexShader);
-      gl.deleteShader(fragmentShader);
-      setWebglSupported(false);
-      return;
-    }
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error(gl.getProgramInfoLog(program));
-      gl.deleteProgram(program);
-      gl.deleteShader(vertexShader);
-      gl.deleteShader(fragmentShader);
-      setWebglSupported(false);
-      return;
-    }
-
-    gl.useProgram(program);
-
-    const positionLoc = gl.getAttribLocation(program, 'position');
-    const resolutionLoc = gl.getUniformLocation(program, 'u_resolution');
-    const pointerLoc = gl.getUniformLocation(program, 'u_pointer');
-    const timeLoc = gl.getUniformLocation(program, 'u_time');
-    const scrollLoc = gl.getUniformLocation(program, 'u_scroll');
-    const pixelLoc = gl.getUniformLocation(program, 'u_pixel');
-
-    const positions = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]);
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(positionLoc);
-    gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
-
-    // Pointer state with spring damping
-    let pointerX = 0;
-    let pointerY = 0;
-    let targetX = 0;
-    let targetY = 0;
-    const damping = 0.12;
-
-    let startTime = performance.now();
-    let rafId = 0;
-    let paused = false;
-
-    const handlePointerMove = (e: MouseEvent) => {
+    const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      targetX = (e.clientX - rect.left) / rect.width;
-      targetY = (e.clientY - rect.top) / rect.height;
-    };
-
-    const handleMouseLeave = () => {
-      targetX = 0.5;
-      targetY = 0.5;
-    };
-
-    const handleResize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      if (rect.width === 0 || rect.height === 0) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
+      canvas.width  = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
       gl.viewport(0, 0, canvas.width, canvas.height);
     };
 
-    const handleVisibilityChange = () => {
-      paused = document.hidden;
+    const onMove = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0) return;
+      px.tgt = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+      py.tgt = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
     };
+    const onLeave = () => { px.tgt = 0.5; py.tgt = 0.5; };
+    const onVis = () => { inPage = !document.hidden; };
+    const onResize = () => resize();
 
-    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-      paused = entries[0].intersectionRatio <= 0;
-    };
+    const io = new IntersectionObserver(
+      (entries) => { visible = entries[0]?.isIntersecting ?? true; },
+      { threshold: 0 }
+    );
+    io.observe(canvas);
 
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    window.addEventListener('mouseleave', handleMouseLeave);
-    window.addEventListener('resize', handleResize);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pointermove', onMove, { passive: true });
+    document.documentElement.addEventListener('mouseleave', onLeave);
+    window.addEventListener('resize', onResize);
+    document.addEventListener('visibilitychange', onVis);
+    resize();
 
-    const observer = new IntersectionObserver(handleIntersection, { threshold: 0 });
-    observer.observe(canvas);
+    setMode('webgl');
 
-    const loop = (now: number) => {
-      if (paused) {
-        rafId = requestAnimationFrame(loop);
-        return;
-      }
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (!visible || !inPage) return;          // paused: skip draw, keep loop cheap
 
-      const elapsed = (now - startTime) / 1000;
+      // spring-damped pointer (fluid inertia)
+      px.cur += (px.tgt - px.cur) * 0.055;
+      py.cur += (py.tgt - py.cur) * 0.055;
 
-      // Spring-damped pointer smoothing
-      pointerX += (targetX - pointerX) * damping;
-      pointerY += (targetY - pointerY) * damping;
+      // slow cinematic entrance fade
+      fade = Math.min(1, fade + 0.012);
 
-      gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
-      gl.uniform2f(pointerLoc, pointerX, pointerY);
-      gl.uniform1f(timeLoc, elapsed);
-      gl.uniform1f(scrollLoc, scrollY.get());
-      gl.uniform1f(pixelLoc, 64.0);
+      gl.uniform2f(uRes, canvas.width, canvas.height);
+      gl.uniform1f(uTime, now / 1000);
+      gl.uniform2f(uPointer, px.cur, 1 - py.cur);
+      gl.uniform1f(uScroll, scrollRef.current);
+      gl.uniform1f(uFade, fade);
 
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-      rafId = requestAnimationFrame(loop);
     };
 
-    rafId = requestAnimationFrame(loop);
+    running = true;
+    raf = requestAnimationFrame(frame);
 
     return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('mouseleave', handleMouseLeave);
-      window.removeEventListener('resize', handleResize);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      observer.disconnect();
-      if (program) gl.deleteProgram(program);
-      if (vertexShader) gl.deleteShader(vertexShader);
-      if (fragmentShader) gl.deleteShader(fragmentShader);
-      if (buffer) gl.deleteBuffer(buffer);
+      running = false;
+      cancelAnimationFrame(raf);
+      io.disconnect();
+      window.removeEventListener('pointermove', onMove);
+      document.documentElement.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', onResize);
+      document.removeEventListener('visibilitychange', onVis);
+      gl.deleteProgram(prog);
+      gl.deleteShader(vs);
+      gl.deleteShader(fs);
+      gl.deleteBuffer(buf);
     };
-  }, [reduced, scrollY]);
-
-  useEffect(() => {
-    if (!mounted || reduced) return;
-    const cleanup = init();
-    return () => cleanup?.();
-  }, [mounted, reduced, init]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduced]);
 
   return (
-    <div className="predictive-arc-wrapper" style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-      {webglSupported && mounted && !reduced ? (
-        <canvas ref={canvasRef} className="predictive-arc" aria-hidden="true" />
+    <div className="hero-arc" aria-hidden="true">
+      {mode !== 'fallback' ? (
+        <canvas ref={canvasRef} />
       ) : (
-        <div className="predictive-arc-fallback" aria-hidden="true" />
+        <div className="hero-arc-fallback" />
       )}
     </div>
   );

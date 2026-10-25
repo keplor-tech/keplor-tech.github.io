@@ -5,80 +5,64 @@ import { useReducedMotion } from 'framer-motion';
 
 export function CustomCursor() {
   const reduced = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
-  const [isActive, setIsActive] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+  const [active, setActive] = useState(false);
   const [label, setLabel] = useState('');
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
-  const [targetX, setTargetX] = useState(0);
-  const [targetY, setTargetY] = useState(0);
-  const rafRef = useRef<number | null>(null);
+  const ringRef = useRef<HTMLDivElement | null>(null);
+  const pos = useRef({ x: -100, y: -100, tx: -100, ty: -100 });
+  const raf = useRef(0);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (reduced) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    setEnabled(true);
+  }, [reduced]);
 
-  // Spring-damped cursor tracking
   useEffect(() => {
-    if (reduced || !mounted) return;
+    if (!enabled) return;
 
-    const handleMove = (e: MouseEvent) => {
-      setTargetX(e.clientX);
-      setTargetY(e.clientY);
+    const onMove = (e: PointerEvent) => {
+      pos.current.tx = e.clientX;
+      pos.current.ty = e.clientY;
     };
 
-    const handleMouseOver = (e: Event) => {
-      const target = e.target as HTMLElement | null;
-      const labelText = target?.closest('[data-cursor]') as HTMLElement | null;
-      const cursorLabel = labelText?.dataset.cursor;
-      if (cursorLabel) {
-        setIsActive(true);
-        setLabel(cursorLabel);
+    const onOver = (e: Event) => {
+      const el = (e.target as HTMLElement | null)?.closest('[data-cursor]') as HTMLElement | null;
+      if (el) {
+        setActive(true);
+        setLabel(el.dataset.cursor ?? '');
+      } else {
+        setActive(false);
+        setLabel('');
       }
     };
 
-    const handleMouseOut = () => {
-      setIsActive(false);
-      setLabel('');
+    const tick = () => {
+      raf.current = requestAnimationFrame(tick);
+      const p = pos.current;
+      p.x += (p.tx - p.x) * 0.16;
+      p.y += (p.ty - p.y) * 0.16;
+      const el = ringRef.current;
+      if (el) el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
     };
 
-    const loop = () => {
-      const dx = targetX - x;
-      const dy = targetY - y;
-      if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-        setX((prev) => prev + dx * 0.18);
-        setY((prev) => prev + dy * 0.18);
-      }
-      rafRef.current = requestAnimationFrame(loop);
-    };
-
-    rafRef.current = requestAnimationFrame(loop);
-
-    document.addEventListener('pointermove', handleMove as EventListener, { passive: true });
-    document.addEventListener('mouseover', handleMouseOver as EventListener, true);
-    document.addEventListener('mouseout', handleMouseOut as EventListener, true);
+    raf.current = requestAnimationFrame(tick);
+    window.addEventListener('pointermove', onMove, { passive: true });
+    document.addEventListener('mouseover', onOver, true);
 
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      document.removeEventListener('pointermove', handleMove as EventListener);
-      document.removeEventListener('mouseover', handleMouseOver as EventListener);
-      document.removeEventListener('mouseout', handleMouseOut as EventListener);
+      cancelAnimationFrame(raf.current);
+      window.removeEventListener('pointermove', onMove);
+      document.removeEventListener('mouseover', onOver, true);
     };
-  }, [reduced, mounted, x, y, targetX, targetY]);
+  }, [enabled]);
 
-  if (reduced || !mounted) return null;
-
-  // Only show on fine-pointer devices
-  const isFinePointer = window.matchMedia('(pointer: fine)').matches;
-  if (!isFinePointer) return null;
+  if (!enabled) return null;
 
   return (
-    <div
-      className={`custom-cursor ${isActive ? 'custom-cursor--active' : ''}`}
-      style={{ transform: `translate(${x}px, ${y}px) translate(-50%, -50%)` }}
-    >
-      <div className="custom-cursor__dot" />
-      <div className="custom-cursor__label">{label}</div>
+    <div ref={ringRef} className={`custom-cursor${active ? ' custom-cursor--active' : ''}`} aria-hidden="true">
+      <span className="custom-cursor__dot" />
+      <span className="custom-cursor__label">{label}</span>
     </div>
   );
 }

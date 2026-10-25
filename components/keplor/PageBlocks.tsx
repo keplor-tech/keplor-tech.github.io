@@ -37,7 +37,10 @@ export function Hero({ eyebrow = 'AI / SOFTWARE / REAL IMPACT', title = 'Intelli
           <Link className="text-link" href="/services" data-cursor="OPEN">Explore capabilities <span>↓</span></Link>
         </div>
       </Reveal>
-      <div className="hero__caption"><span>01 — SCROLL TO EXPLORE</span><span>AI & SOFTWARE SOLUTIONS</span></div>
+      <div className="hero__caption">
+        <span>01 — SCROLL TO EXPLORE</span>
+        <span>AI & SOFTWARE SOLUTIONS</span>
+      </div>
     </section>
   );
 }

@@ -1,0 +1,15 @@
+KEPLOR VISUAL CORRECTION — FOLLOW THE ACTUAL CANVA REFERENCES
+
+Read KEPLOR_DESIGN_DIRECTION_V3.md in full, then inspect the supplied /references/ images, especially their black negative space and broad, softly blurred blue/cyan/purple colour fields. The original Canva images take precedence over all earlier generated mockups and prompts.
+
+The previous versions looked too similar because they repeatedly used literal space orbs/planets, orbital rings, stars/particles, and repetitive cards. Do not repeat that visual concept. Implement the visual language in this V3 brief: near-black background, oversized clean sans-serif typography, restrained UI, large diffuse colour fields, thin rules, broad breathing space, and soft, subtle scroll-driven motion.
+
+ABSOLUTELY DO NOT ADD: planets, moons, outlined spheres, orbital rings, starfields, particle constellations, point-cloud globes, mountains, 3D sculptures, floating dashboards, crowded bento grids, or a technical grid overlay. The gradient fields must have no defined physical object edge; they should look like large blurred light bleeding through darkness.
+
+Preserve Keplor's official logo and brand-purple anchor (#36006D), its four business service categories, five target industries, and existing core positioning. Use confident business messaging but do not invent traction, customers, testimonials, case studies, metrics, certifications, public pricing, or capabilities. Use services in open columns/rows instead of repeated cards.
+
+Implement the motion specification: subtle ambient gradient drift tied lightly to scroll, 700–1000ms opacity/translate reveals, restrained 50–80ms stagger, a simple process-line draw, understated hover states, and no scroll hijacking. Support prefers-reduced-motion and mobile performance.
+
+Use Google Stitch as process/design-system inspiration and Lium for clarity of content structure only; neither overrides the Canva images as the visual source of truth.
+
+Before changing files, inspect the current repository and preserve working architecture, routes, and behavior. Make changes directly in the existing codebase, then run the application and compare screenshots at 1440px, 1920px, and 390px with the supplied reference images. Check all links, keyboard interactions, contact handling, console output, and production build. Fix visual mismatches before reporting completion. Do not stop at a plan or only edit the hero. State honestly what was tested and what wasn't.
