@@ -1,105 +1,71 @@
 'use client';
 
-import { motion, useReducedMotion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useReducedMotion } from 'framer-motion';
 
-// Shared pointer state across the window
-let pointerX = 0;
-let pointerY = 0;
-const pointerListeners = new Set<(nx: number, ny: number) => void>();
-
-export function useSharedPointer() {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  useEffect(() => {
-    const update = (nx: number, ny: number) => {
-      x.set(nx);
-      y.set(ny);
-    };
-    pointerListeners.add(update);
-
-    const handleMove = (e: MouseEvent) => {
-      pointerX = e.clientX / window.innerWidth;
-      pointerY = e.clientY / window.innerHeight;
-      pointerListeners.forEach((fn) => fn(pointerX, pointerY));
-    };
-
-    const handleLeave = () => {
-      pointerX = 0.5;
-      pointerY = 0.5;
-      pointerListeners.forEach((fn) => fn(pointerX, pointerY));
-    };
-
-    window.addEventListener('pointermove', handleMove, { passive: true });
-    window.addEventListener('mouseleave', handleLeave);
-
-    return () => {
-      pointerListeners.delete(update);
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('mouseleave', handleLeave);
-    };
-  }, [x, y]);
-
-  return { x, y };
-}
-
+/**
+ * Prototype-faithful ambient: one diffuse wash layer driven by a single
+ * shared pointer listener + rAF-throttled scroll drift. No per-section listeners.
+ */
 export function Ambient() {
   const reduced = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const { scrollYProgress } = useScroll();
-  const { x: pointerX, y: pointerY } = useSharedPointer();
+  const washRef = useRef<HTMLDivElement | null>(null);
 
-  // Pointer-driven spring transforms (different damping per layer for depth separation)
-  const pointerXSpring = useSpring(pointerX, { stiffness: 120, damping: 22 });
-  const pointerYSpring = useSpring(pointerY, { stiffness: 120, damping: 22 });
+  useEffect(() => {
+    if (reduced) return;
+    const wash = washRef.current;
+    if (!wash) return;
 
-  // Scroll-driven transforms
-  const scrollCyanY = useTransform(scrollYProgress, [0, 1], [0, -60]);
-  const scrollVioletY = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const scrollBlueY = useTransform(scrollYProgress, [0, 1], [0, -40]);
-  const scrollMagentaY = useTransform(scrollYProgress, [0, 1], [0, 100]);
+    let raf = 0;
+    const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
 
-  const scrollCyanScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
-  const scrollVioletScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
-  const scrollBlueScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
-  const scrollMagentaScale = useTransform(scrollYProgress, [0, 1], [1, 1.05]);
+    const applyScroll = () => {
+      const y = window.scrollY;
+      wash.style.transform = `translate3d(calc(var(--mx, 0px) + ${Math.sin(y * 0.0007) * 9}px), calc(var(--my, 0px) + ${-y * 0.055}px), 0)`;
+    };
 
-  const scrollCyanOpacity = useTransform(scrollYProgress, [0, 1], [0.22, 0.14]);
-  const scrollVioletOpacity = useTransform(scrollYProgress, [0, 1], [0.18, 0.10]);
-  const scrollBlueOpacity = useTransform(scrollYProgress, [0, 1], [0.14, 0.08]);
-  const scrollMagentaOpacity = useTransform(scrollYProgress, [0, 1], [0.12, 0.06]);
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; applyScroll(); });
+    };
 
-  // Pointer-driven offsets (applied as x for horizontal pointer separation)
-  const pointerCyanX = useTransform(pointerXSpring, [0, 1], [-15, 15]);
-  const pointerVioletX = useTransform(pointerXSpring, [0, 1], [-25, 25]);
-  const pointerBlueX = useTransform(pointerXSpring, [0, 1], [-10, 10]);
-  const pointerMagentaX = useTransform(pointerXSpring, [0, 1], [-30, 30]);
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') return;
+      pointer.tx = (e.clientX / window.innerWidth - 0.5) * 10;
+      pointer.ty = (e.clientY / window.innerHeight - 0.5) * 8;
+    };
 
-  const pointerCyanY = useTransform(pointerYSpring, [0, 1], [-15, 15]);
-  const pointerVioletY = useTransform(pointerYSpring, [0, 1], [-20, 20]);
-  const pointerBlueY = useTransform(pointerYSpring, [0, 1], [-10, 10]);
-  const pointerMagentaY = useTransform(pointerYSpring, [0, 1], [-25, 25]);
+    const onLeave = () => { pointer.tx = 0; pointer.ty = 0; };
+
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      const dx = pointer.tx - pointer.x;
+      const dy = pointer.ty - pointer.y;
+      if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
+        pointer.x += dx * 0.06;
+        pointer.y += dy * 0.06;
+        wash.style.setProperty('--mx', `${pointer.x.toFixed(2)}px`);
+        wash.style.setProperty('--my', `${pointer.y.toFixed(2)}px`);
+        applyScroll();
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('pointermove', onMove, { passive: true });
+    document.documentElement.addEventListener('mouseleave', onLeave);
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('pointermove', onMove);
+      document.documentElement.removeEventListener('mouseleave', onLeave);
+    };
+  }, [reduced]);
 
   return (
     <div className="ambient" aria-hidden="true">
-      <motion.div
-        className="ambient__glow ambient__glow--cyan"
-        style={mounted && !reduced ? { x: pointerCyanX, y: scrollCyanY, scale: scrollCyanScale, opacity: scrollCyanOpacity } : undefined}
-      />
-      <motion.div
-        className="ambient__glow ambient__glow--violet"
-        style={mounted && !reduced ? { x: pointerVioletX, y: scrollVioletY, scale: scrollVioletScale, opacity: scrollVioletOpacity } : undefined}
-      />
-      <motion.div
-        className="ambient__glow ambient__glow--blue"
-        style={mounted && !reduced ? { x: pointerBlueX, y: scrollBlueY, scale: scrollBlueScale, opacity: scrollBlueOpacity } : undefined}
-      />
-      <motion.div
-        className="ambient__glow ambient__glow--magenta"
-        style={mounted && !reduced ? { x: pointerMagentaX, y: scrollMagentaY, scale: scrollMagentaScale, opacity: scrollMagentaOpacity } : undefined}
-      />
+      <div ref={washRef} className="ambient__wash" />
     </div>
   );
 }

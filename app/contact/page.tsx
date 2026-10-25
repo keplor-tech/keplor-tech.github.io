@@ -1,3 +1,34 @@
-import { Hero } from '@/components/keplor/PageBlocks';
+'use client';
+
+import { PageHero } from '@/components/keplor/PageBlocks';
+import { Reveal } from '@/components/keplor/Reveal';
 import { ContactComposer } from '@/components/keplor/ContactComposer';
-export default function ContactPage() { return <main><Hero eyebrow="Contact Keplor" title="Make the next step clearer." body="Use the message composer to prepare an introduction. This site has no connected backend, so it does not claim to deliver or track submissions." /><section className="section-wrap contact-section"><div><p className="eyebrow">A considered conversation</p><h2>Bring the opportunity, question, or constraint.</h2></div><ContactComposer /></section></main>; }
+
+export default function ContactPage() {
+  return (
+    <>
+      <PageHero
+        eyebrow="Contact"
+        title="Let's build what's <span class='accent'>next.</span>"
+        body="Have a challenge to solve, a workflow to improve, or an idea to explore? Tell us what you're working on."
+      />
+      <section className="section contact">
+        <div className="contact-grid">
+          <Reveal>
+            <div>
+              <div className="section-label">Start the conversation</div>
+              <p className="contact-copy">Use the message composer to prepare an introduction. Copy it into your preferred email or messaging channel and send it to us.</p>
+              <div className="contact-details">
+                <span>Project enquiries</span>
+                <span>Replies from the Keplor team</span>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <ContactComposer />
+          </Reveal>
+        </div>
+      </section>
+    </>
+  );
+}
