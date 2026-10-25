@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Reveal } from './Reveal';
+import { motion, useReducedMotion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { Reveal, HeadlineMaskReveal } from './Reveal';
+import { PredictiveArc } from './PredictiveArc';
 import { ContactComposer } from './ContactComposer';
 
 export const services = [
@@ -21,15 +23,73 @@ export const industries = [
 ];
 
 export function Hero({ eyebrow = 'AI / SOFTWARE / REAL IMPACT', title = 'Intelligent systems. Built around your <span className="purple">business</span>.', body = 'AI/ML, custom software, cloud and analytics solutions designed around real business needs.' }: { eyebrow?: string; title?: string; body?: string }) {
-  return <section className="hero section-wrap"><Reveal><p className="eyebrow">{eyebrow}</p><h1 dangerouslySetInnerHTML={{ __html: title }} /><p className="hero__body">{body}</p><div className="hero__actions"><Link className="button button--solid" href="/contact">Discuss a project <span>↗</span></Link><Link className="text-link" href="/services">Explore capabilities <span>↓</span></Link></div></Reveal><div className="hero__caption"><span>01 — SCROLL TO EXPLORE</span><span>AI & SOFTWARE SOLUTIONS</span></div></section>;
+  return (
+    <section className="hero section-wrap">
+      <PredictiveArc />
+      <Reveal>
+        <p className="eyebrow">{eyebrow}</p>
+        <HeadlineMaskReveal delay={0.1}>
+          <h1 dangerouslySetInnerHTML={{ __html: title }} />
+        </HeadlineMaskReveal>
+        <p className="hero__body">{body}</p>
+        <div className="hero__actions">
+          <Link className="button button--solid" href="/contact" data-cursor="EXPLORE">Discuss a project <span>↗</span></Link>
+          <Link className="text-link" href="/services" data-cursor="OPEN">Explore capabilities <span>↓</span></Link>
+        </div>
+      </Reveal>
+      <div className="hero__caption"><span>01 — SCROLL TO EXPLORE</span><span>AI & SOFTWARE SOLUTIONS</span></div>
+    </section>
+  );
 }
 
 export function ServicesBlock() {
-  return <section className="section-wrap" id="services"><div className="section-heading"><p className="eyebrow">01 / SERVICES</p><h2>Ideas into intelligent <span className="purple">solutions</span>.</h2></div><p className="hero__body" style={{ maxWidth: '540px', marginBottom: 50 }}>Technology shaped around business needs, constraints, and goals.</p><div className="service-list">{services.map(([number, title, summary, detail], index) => <Reveal key={title} delay={index * .06}><article className="service-row"><span className="service-number">{number}</span><div><h3>{title}</h3><p>{summary}</p></div><p className="service-detail">{detail}</p><span className="service-arrow">↗</span></article></Reveal>)}</div></section>;
+  return (
+    <section className="section-wrap" id="services">
+      <div className="section-heading">
+        <p className="eyebrow">01 / SERVICES</p>
+        <h2>Ideas into intelligent <span className="purple">solutions</span>.</h2>
+      </div>
+      <p className="hero__body" style={{ maxWidth: '540px', marginBottom: 50 }}>Technology shaped around business needs, constraints, and goals.</p>
+      <div className="service-list">
+        {services.map(([number, title, summary, detail], index) => (
+          <Reveal key={title} delay={index * 0.06}>
+            <article className="service-row" data-cursor="EXPLORE">
+              <span className="service-number">{number}</span>
+              <div>
+                <h3>{title}</h3>
+                <p>{summary}</p>
+              </div>
+              <p className="service-detail">{detail}</p>
+              <span className="service-arrow">↗</span>
+            </article>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export function IndustriesBlock() {
-  return <section className="section-wrap section-wrap--line"><div className="section-heading"><p className="eyebrow">02 / INDUSTRIES</p><h2>Technology for real-world <span className="purple">complexity</span>.</h2></div><div className="industry-list">{industries.map(([name, detail], index) => <Reveal key={name} delay={index * .05}><Link href="/industries" className="industry-row"><span>0{index + 1}</span><h3>{name}</h3><p>{detail}</p><b>↗</b></Link></Reveal>)}</div></section>;
+  return (
+    <section className="section-wrap section-wrap--line">
+      <div className="section-heading">
+        <p className="eyebrow">02 / INDUSTRIES</p>
+        <h2>Technology for real-world <span className="purple">complexity</span>.</h2>
+      </div>
+      <div className="industry-list">
+        {industries.map(([name, detail], index) => (
+          <Reveal key={name} delay={index * 0.05}>
+            <Link href="/industries" className="industry-row" data-cursor="OPEN">
+              <span>0{index + 1}</span>
+              <h3>{name}</h3>
+              <p>{detail}</p>
+              <b>↗</b>
+            </Link>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export function ApproachBlock() {
@@ -45,9 +105,36 @@ export function ApproachBlock() {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-  return <section className="section-wrap approach" id="approach"><div className="section-heading"><p className="eyebrow">03 / APPROACH</p><h2>A collaborative path from idea to <span className="purple">impact</span>.</h2></div><div className={`process-line ${drawn ? 'process-line--drawn' : ''}`} ref={ref}>{steps.map(([title, text], index) => <Reveal key={title} delay={index * .1}><div className="process-step"><span>0{index + 1}</span><h3>{title}</h3><p>{text}</p></div></Reveal>)}</div></section>;
+  return (
+    <section className="section-wrap approach" id="approach">
+      <div className="section-heading">
+        <p className="eyebrow">03 / APPROACH</p>
+        <h2>A collaborative path from idea to <span className="purple">impact</span>.</h2>
+      </div>
+      <div className={`process-line ${drawn ? 'process-line--drawn' : ''}`} ref={ref}>
+        {steps.map(([title, text], index) => (
+          <Reveal key={title} delay={index * 0.1}>
+            <div className="process-step">
+              <span>0{index + 1}</span>
+              <h3>{title}</h3>
+              <p>{text}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export function ContactBlock() {
-  return <section className="section-wrap contact-section"><div><p className="eyebrow">04 / CONTACT</p><h2>Let's build what's <span className="purple">next</span>.</h2><p className="hero__body">Have a challenge to solve or an idea to explore? Let's talk.</p></div><ContactComposer /></section>;
+  return (
+    <section className="section-wrap contact-section">
+      <div>
+        <p className="eyebrow">04 / CONTACT</p>
+        <h2>Let's build what's <span className="purple">next</span>.</h2>
+        <p className="hero__body">Have a challenge to solve or an idea to explore? Let's talk.</p>
+      </div>
+      <ContactComposer />
+    </section>
+  );
 }
