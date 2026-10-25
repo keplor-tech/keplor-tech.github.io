@@ -4,21 +4,26 @@
 
 @layer base {
   :root {
-    --background: 5 5 7;
-    --foreground: 247 247 250;
-    --muted: 10 10 14;
-    --muted-foreground: 185 186 198;
-    --border: 255 255 255 / 12%;
-    --primary: 54 0 109;
-    --primary-foreground: 247 247 250;
-    --secondary: 139 92 246;
-    --secondary-foreground: 247 247 250;
-    --accent: 139 92 246;
-    --accent-foreground: 247 247 250;
+    --background: 220 13% 9%;
+    --foreground: 220 13% 98%;
+    --card: 220 13% 11%;
+    --card-foreground: 220 13% 95%;
+    --popover: 220 13% 11%;
+    --popover-foreground: 220 13% 95%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 220 13% 98%;
+    --secondary: 262 83% 68%;
+    --secondary-foreground: 220 13% 98%;
+    --muted: 220 13% 15%;
+    --muted-foreground: 220 13% 63%;
+    --accent: 220 13% 15%;
+    --accent-foreground: 220 13% 95%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 247 247 250;
-    --ring: 54 0 109;
-    --radius: 0.5rem;
+    --destructive-foreground: 220 13% 98%;
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;
   }
 }
 
@@ -78,58 +83,5 @@
   .nav-link:hover::after,
   .nav-link.active::after {
     @apply w-full;
-  }
-
-  /* Ambient light field - V3 diffuse background lighting */
-  .ambient-field {
-    position: fixed;
-    inset: -15vh -12vw;
-    z-index: -1;
-    pointer-events: none;
-    overflow: hidden;
-    filter: blur(42px);
-    opacity: 0.92;
-    will-change: transform;
-  }
-
-  .ambient-wash {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 38% 39% at 82% 23%, rgba(0, 122, 213, 0.22), transparent 78%),
-      radial-gradient(ellipse 34% 42% at 98% 52%, rgba(112, 28, 220, 0.18), transparent 76%),
-      radial-gradient(ellipse 32% 25% at 19% 80%, rgba(0, 164, 191, 0.11), transparent 78%),
-      radial-gradient(ellipse 24% 32% at 67% 92%, rgba(71, 25, 155, 0.12), transparent 80%);
-    transform: translate3d(var(--mx, 0), var(--my, 0), 0);
-    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  /* Section reveal */
-  .reveal {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .reveal:nth-child(2) { transition-delay: 60ms; }
-  .reveal:nth-child(3) { transition-delay: 120ms; }
-  .reveal:nth-child(4) { transition-delay: 180ms; }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      scroll-behavior: auto !important;
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-    .reveal {
-      opacity: 1;
-      transform: none;
-    }
   }
 }
