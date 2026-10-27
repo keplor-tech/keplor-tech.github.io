@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import SiteShell from "@/components/SiteShell";
+import ClientRoot from "@/components/ClientRoot";
 
 export const metadata: Metadata = {
   title: { default: "Keplor — Intelligent systems, thoughtfully built", template: "%s — Keplor" },
@@ -14,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><SiteShell>{children}</SiteShell></body></html>;
+  return <html lang="en"><body><ClientRoot>{children}</ClientRoot></body></html>;
 }

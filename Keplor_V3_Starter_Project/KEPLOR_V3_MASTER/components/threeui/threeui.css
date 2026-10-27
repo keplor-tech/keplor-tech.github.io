@@ -1,0 +1,26 @@
+/* Extracted from ThreeUI Predictive Arc source bundle — shared styles */
+.threeui-background {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.predictive-arc {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.predictive-arc canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.predictive-arc--dark {
+  background: #030303;
+}
+
+.predictive-arc--light {
+  background: #eef1f6;
+}
