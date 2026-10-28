@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useMotionValue, type MotionValue } from "framer-motion";
 import {
   createPredictiveArcRenderer,
   PREDICTIVE_ARC_DEFAULTS,
@@ -12,15 +13,26 @@ export type PredictiveArcVariant = "predictive";
 type PredictiveVariantProps = Partial<PredictiveArcOptions> & {
   className?: string;
   variant?: "predictive";
+  brightnessProgress?: MotionValue<number>;
 };
 
 export type PredictiveArcCanvasProps = PredictiveVariantProps;
 
-function PredictiveArcRenderer({ className = "", ...props }: PredictiveVariantProps) {
+function PredictiveArcRenderer({ className = "", brightnessProgress, ...props }: PredictiveVariantProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const optionsRef = useRef({ ...PREDICTIVE_ARC_DEFAULTS, ...props });
   optionsRef.current = { ...PREDICTIVE_ARC_DEFAULTS, ...props };
+
+  // Subscribe to scroll-driven brightness progress without causing React re-renders.
+  // Updates the shared options ref that the renderer reads on every animation frame.
+  useEffect(() => {
+    if (!brightnessProgress) return undefined;
+    const unsubscribe = brightnessProgress.on("change", (latest: number) => {
+      optionsRef.current.brightness = Math.max(0, Math.min(1, 1 - latest));
+    });
+    return () => unsubscribe();
+  }, [brightnessProgress]);
 
   useEffect(() => {
     const host = hostRef.current;

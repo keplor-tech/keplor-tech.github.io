@@ -57,7 +57,23 @@
   --duration-base: 250ms;
   --duration-slow: 400ms;
   --duration-slower: 600ms;
-  /* Typography scale */
+
+  /* Ambient lighting (animated via scroll) */
+  --ambient-light-violet: rgba(54, 0, 109, 0.18);
+  --ambient-light-indigo: rgba(27, 20, 53, 0.15);
+  --ambient-light-cyan: rgba(54, 0, 109, 0.08);
+
+  /* Ambient lighting overlay — real element so scroll-driven CSS vars can animate it */
+.ambient-light-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(ellipse at 85% 8%, var(--ambient-light-violet), transparent 42%),
+    radial-gradient(ellipse at 12% 55%, var(--ambient-light-indigo), transparent 40%),
+    radial-gradient(ellipse at 50% 100%, var(--ambient-light-cyan), transparent 55%);
+  transition: background 0.2s ease-out;
+}
   --font-display: "Inter", "Segoe UI", system-ui, sans-serif;
   --text-xs: clamp(0.65rem, 0.6rem + 0.25vw, 0.75rem);
   --text-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.9rem);
@@ -115,7 +131,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 /* Site shell */
 .site-shell { min-height: 100vh; overflow: clip; position: relative; isolation: isolate; }
-.site-shell::before { content: ""; pointer-events: none; position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at 85% 8%, rgba(54,0,109,.18), transparent 42%), radial-gradient(ellipse at 12% 55%, rgba(27,20,53,.15), transparent 40%), radial-gradient(ellipse at 50% 100%, rgba(54,0,109,.08), transparent 55%); }
+.site-shell::before { content: ""; pointer-events: none; position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at 85% 8%, var(--ambient-light-violet), transparent 42%), radial-gradient(ellipse at 12% 55%, var(--ambient-light-indigo), transparent 40%), radial-gradient(ellipse at 50% 100%, var(--ambient-light-cyan), transparent 55%); }
 .site-header, main, .site-footer { position: relative; z-index: 1; }
 
 /* Header */
@@ -568,7 +584,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 560px) {
   .header-inner { min-height: 68px; }
   .hero { padding-block: 5rem 4rem; }
-  .hero h1 { font-size: clamp(3rem, 14vw, 4.8rem); }
+  .hero h1 { font-size: clamp(2.6rem, 16vw, 4.8rem); max-width: 100%; }
   .hero-visual { right: -48%; width: 140%; opacity: .42; }
   .hero-note { margin-top: 2.3rem; }
   .section-head { margin-bottom: 2.2rem; }
@@ -580,6 +596,62 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .footer-top, .footer-bottom { flex-direction: column; }
   .footer-links { max-width: 400px; }
   .page-hero { padding-block: 5rem 3rem; }
+}
+
+/* Mobile hero: single-column composition below 768px */
+@media (max-width: 768px) {
+  .hero {
+    display: block;
+    min-height: auto;
+    padding-block: 5rem 4rem;
+    overflow: hidden;
+  }
+  .hero-copy {
+    max-width: 100%;
+    padding-inline: var(--gutter-sm);
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 16vw, 4.8rem);
+    max-width: 100%;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+  }
+  .hero h1 em {
+    display: inline;
+    font-style: normal;
+    color: var(--color-violet);
+    font-weight: 400;
+  }
+  .hero-lede {
+    max-width: 100%;
+    font-size: var(--text-base);
+    line-height: 1.7;
+  }
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  .hero-actions .button {
+    width: 100%;
+    justify-content: center;
+  }
+  .hero-visual {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    right: auto;
+    left: 0;
+    top: auto;
+    bottom: auto;
+    opacity: 0.45;
+    margin-top: 2.5rem;
+    mask-image: none;
+  }
+  .hero-note {
+    margin-top: 2.5rem;
+  }
 }
 
 /* Contact page — message composer */
