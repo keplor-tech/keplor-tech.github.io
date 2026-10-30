@@ -1,94 +1,108 @@
- "use client";
- import { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
- const navLinks = [
-  ["About", "/about/"], ["Services", "/services/"], ["Features", "/features/"],
-  ["Blog", "/blog/"], ["Testimonials", "/testimonials/"], ["Careers", "/careers/"], ["Contact", "/contact/"]
+const navLinks = [
+  ["Home", "/"],
+  ["About", "/about/"],
+  ["Services", "/services/"],
+  ["Features", "/features/"],
+  ["Products", "/products/"],
+  ["Blog", "/blog/"],
+  ["Careers", "/careers/"],
+  ["Contact", "/contact/"],
 ];
 
- const footerColumns = [
-   { title: "Company", links: [["About", "/about/"], ["Services", "/services/"], ["Features", "/features/"], ["Careers", "/careers/"]] },
-   { title: "Resources", links: [["Blog", "/blog/"], ["Testimonials", "/testimonials/"], ["Contact", "/contact/"]] }
- ];
+export default function SiteShell({ children }: { children: React.ReactNode }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
- export default function SiteShell({ children }: { children: React.ReactNode }) {
-   const [mobileOpen, setMobileOpen] = useState(false);
-   const [scrolled, setScrolled] = useState(false);
-   const pathname = usePathname();
+  useEffect(() => {
+    const onScroll = () => {
+      const wash = document.getElementById("wash");
+      if (wash) {
+        const y = window.scrollY;
+        wash.style.transform = `translate3d(${Math.sin(y * 0.0007) * 9}px, ${-y * 0.055}px, 0)`;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("pointermove", (e) => {
+      if (e.pointerType === "touch") return;
+      const x = (e.clientX / innerWidth - 0.5) * 10;
+      const y = (e.clientY / innerHeight - 0.5) * 8;
+      const wash = document.getElementById("wash");
+      if (wash) {
+        wash.style.setProperty("--mx", x + "px");
+        wash.style.setProperty("--my", y + "px");
+      }
+    });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
-   useEffect(() => {
-     const onScroll = () => setScrolled(window.scrollY > 20);
-     window.addEventListener("scroll", onScroll, { passive: true });
-     return () => window.removeEventListener("scroll", onScroll);
-   }, []);
+  useEffect(() => {
+    const yearEl = document.getElementById("year");
+    if (yearEl && !yearEl.textContent) {
+      yearEl.textContent = new Date().getFullYear().toString();
+    }
+  }, []);
 
-   return <div className="site-shell">
-     <header className={`site-header ${scrolled ? "scrolled" : ""}`}>
-       <div className="container header-inner">
-         <Link className="wordmark" href="/" aria-label="Keplor home">
-           <span className="wordmark-mark" aria-hidden="true" />
-           keplor<span style={{color:"var(--color-violet)"}}>.</span>
-         </Link>
-         <nav className="nav-links" aria-label="Primary navigation">
-           {navLinks.map(([label, href]) => (
-             <Link
-               key={href}
-               href={href}
-               aria-current={pathname === href || pathname === href.slice(0,-1) ? "page" : undefined}
-             >
-               {label}
-             </Link>
-           ))}
-         </nav>
-         <Link className="header-cta" href="/contact/">
-           Discuss a project <span aria-hidden="true">→</span>
-         </Link>
-         <button
-           className="menu-toggle"
-           type="button"
-           aria-expanded={mobileOpen}
-           aria-controls="mobile-navigation"
-           onClick={() => setMobileOpen(v => !v)}
-         >
-           {mobileOpen ? "Close" : "Menu"}
-         </button>
-       </div>
-       {mobileOpen && (
-         <nav id="mobile-navigation" className="mobile-nav open" aria-label="Mobile navigation">
-           <Link href="/" onClick={() => setMobileOpen(false)}>Home</Link>
-           {navLinks.map(([label, href]) => (
-             <Link key={href} href={href} onClick={() => setMobileOpen(false)}>{label}</Link>
-           ))}
-         </nav>
-       )}
-     </header>
-     <main>{children}</main>
-     <footer className="site-footer">
-       <div className="container">
-         <div className="footer-top">
-           <div className="footer-brand">
-             <Link className="wordmark" href="/">
-               <span className="wordmark-mark" aria-hidden="true" />
-               keplor<span style={{color:"var(--color-violet)"}}>.</span>
-             </Link>
-             <p>Thoughtful AI and software systems, designed around real-world needs.</p>
-           </div>
-           {footerColumns.map((col) => (
-             <nav className="footer-nav" key={col.title} aria-label={col.title}>
-               <span className="footer-nav-title">{col.title}</span>
-               {col.links.map(([label, href]) => (
-                 <Link key={href} href={href}>{label}</Link>
-               ))}
-             </nav>
-           ))}
-         </div>
-         <div className="footer-bottom">
-           <span className="footer-copyright">© {new Date().getFullYear()} Keplor</span>
-           <span className="footer-tagline">Built with intent. Designed for what’s next.</span>
-         </div>
-       </div>
-     </footer>
-   </div>;
- }
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(href);
+  };
+
+  return (
+    <div className="site-shell">
+      <div className="ambient" aria-hidden="true">
+        <div className="wash" id="wash"></div>
+      </div>
+      <div className="grain" aria-hidden="true"></div>
+      <header>
+        <a className="brand" href="/" aria-label="Keplor home">
+          <Image src="/assets/keplor-primary.png" alt="" width={31} height={31} priority />
+          <span>Keplor</span>
+        </a>
+        <nav className="nav" id="nav">
+          {navLinks.map(([label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={isActive(href) ? "page" : undefined}
+            >
+              {label}
+            </Link>
+          ))}
+          <a className="nav-cta" href="/contact/">
+            Let's talk <span>→</span>
+          </a>
+        </nav>
+        <button
+          className="menu-toggle"
+          id="menuToggle"
+          type="button"
+          aria-expanded={mobileOpen}
+          aria-controls="nav"
+          aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+          onClick={() => setMobileOpen((v) => !v)}
+        >
+          {mobileOpen ? "×" : "☰"}
+        </button>
+      </header>
+      {mobileOpen && (
+        <nav id="mobile-navigation" className="mobile-nav open" aria-label="Mobile navigation">
+          {navLinks.map(([label, href]) => (
+            <Link key={href} href={href} onClick={() => setMobileOpen(false)}>
+              {label}
+            </Link>
+          ))}
+        </nav>
+      )}
+      <main>{children}</main>
+    </div>
+  );
+}

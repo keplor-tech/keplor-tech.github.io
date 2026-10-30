@@ -1,5 +1,80 @@
 # Handoff State — Keplor V3 Hero Scroll Transition
 
+## Gate 2 progress — 2026-10-30
+
+Gate 2 documentation is complete in [KEPLOR_V3_GATE2_DESIGN_AND_TECHNICAL_SPEC.md](./KEPLOR_V3_GATE2_DESIGN_AND_TECHNICAL_SPEC.md).
+
+### Decision summary
+
+- Recommended homepage composition: **Option A**, a dedicated 500vh cinematic intro followed by normal-flow Services, Industries, Approach, Contact, and the 12-column Obsidian Vault footer.
+- Rendering: one transparent React Three Fiber WebGL canvas with one deterministic master particle buffer and five target-position attributes.
+- Motion authority: Lenis for smooth scrolling, GSAP ScrollTrigger for the pinned master progress, R3F/Three.js for scene rendering, and Framer Motion only for local UI transitions.
+- Authenticity: the current Predictive Arc remains classified as an internal Canvas 2D approximation. Gate 3 should implement a documented custom recreation, not claim ThreeUI authenticity.
+- Reduced motion: no Lenis, no pinning, no scroll scrub, no continuous particle movement; render a complete static portal and natural-flow semantic chapters.
+- Proposed, not installed, dependencies: `three@0.160.0`, `@types/three@0.160.0`, `@react-three/fiber@8.17.10`, and `gsap@3.12.5`.
+
+### Gate 2 verification notes
+
+- Source-level review confirmed the current Arc uses `canvas.getContext("2d", { alpha: false })` and an opaque fill, so it cannot be layered over a WebGL scene.
+- Source-level review confirmed Lenis is currently advanced from Framer Motion's animation frame loop and the homepage has a separate Framer Motion scroll-progress path.
+- `next.config.mjs` confirms static export compatibility constraints.
+- `app/globals.css` contains `.ambient-light-overlay` nested inside `:root`; this is recorded as a verified later-gate CSS defect and was not modified under Gate 2 restrictions.
+- No application source, dependency manifest, route, or original reference file was changed during Gate 2.
+
+## Gate 3 progress — 2026-10-30 (creative direction corrected)
+
+Gate 3 was corrected per the critical creative direction correction. The original prototype at `design/prototype/index.html` is the canonical visual baseline. The Gate 2 "Option A" 500vh pinned cinematic intro was **reverted** because it restructured the homepage away from the approved design.
+
+### Decision summary
+
+- **Design authority:** Original `design/prototype/index.html` is the canonical baseline. Section order, typography, navigation, footer, and content are preserved exactly.
+- **Restored homepage:** Hero → Services → Industries → Approach → About → Contact (original order). Original headline "Intelligent systems. Built around your business." Original 4-column Services grid. Original About section (belief + mission/vision). Original navigation (6 links + CTA). Original footer structure.
+- **Particle system:** Integrated section-anchored, not a 500vh pinned intro. One transparent R3F canvas behind content. Section scroll positions drive stage progress: Hero=portal, Services=helix, Industries=wave, Approach=vortex, Contact=orbit.
+- **Removed:** 500vh pinned cinematic intro, giant stage headings, Canvas 2D Arc overlap, Framer Motion scroll progress, Lenis smooth scroll, 8-link navigation, Testimonials/Products/Features/Blog/Careers routes from nav.
+- **Added:** Grain overlay, ambient wash with cursor tracking, original section border-top dividers with in-view glow, original section styles.
+- **Dependencies installed:** `three@0.160.0`, `@types/three@0.160.0`, `@react-three/fiber@8.17.10`, `gsap@3.12.5` (available for use, not yet wired into the section-anchored particle controller).
+
+### Gate 3 verification notes
+
+- Typecheck: pass (0 errors)
+- Lint: pass (0 warnings/errors)
+- Production build: pass (11 static routes)
+- Original prototype screenshots captured: 1440px, 768px, 390px
+- Restored implementation screenshots captured: 1440px, 768px, 390px
+- Previous (drifted) implementation screenshots captured for comparison: 1440px, 768px, 390px
+- Fidelity audit documented in `docs/ORIGINAL_DESIGN_FIDELITY_AUDIT.md`
+
+### Remaining work for Gate 3 completion
+
+- Wire the section-anchored particle controller to update R3F uniforms from IntersectionObserver progress (currently the observer computes progress but the MasterParticleScene uniforms need to be connected via context or props).
+- Verify the particle system is visibly alive (continuous movement, luminous core, real depth) at all breakpoints.
+- Run side-by-side visual QA comparing original prototype vs restored implementation screenshots.
+
+## Stage 2 progress — 2026-10-30
+
+Stage 2 — Complete eight-page website implementation & original design preservation — complete and verified.
+
+### Decision summary
+
+- **Design authority:** Original `design/prototype/index.html` remains the canonical baseline.
+- **Eight routes implemented:** `/`, `/about`, `/services`, `/features`, `/products`, `/blog`, `/careers`, `/contact`.
+- **Standalone `/testimonials` route removed.** Testimonials content remains embedded in About page as illustrative case studies.
+- **Actual logo image used:** `public/assets/keplor-primary.png` (500×500 RGBA) in header and footer brand lockups alongside the Keplor wordmark.
+- **Content data files:** `lib/content/products.ts`, `lib/content/case-studies.ts`, `lib/content/testimonials.ts`, `lib/content/blog-posts.ts`, `lib/content/careers.ts` — all illustrative/demo content clearly labeled as sample/preview/concept.
+- **Contact form:** Complete frontend flow with name, email, organisation, enquiry type, project description, validation, mailto action, copy message, honest backend disclosure.
+- **Navigation:** SiteShell.tsx uses real Next.js routes for all eight destinations; header and footer consistent.
+- **Dead code removed:** `CinematicIntro.tsx` and `useCinematicTimeline.ts` (500vh pinned approach superseded).
+- **Existing R3F particle system preserved** for Stage 3 refinement.
+
+### Stage 2 verification notes
+
+- Typecheck: pass (0 errors)
+- Lint: pass (0 warnings/errors)
+- Production build: pass (10 static routes: /, /about, /blog, /careers, /contact, /features, /products, /services, /_not-found)
+- All 8 routes verified running on port 3011
+- Screenshots captured: stage2-home-1440, stage2-about-1440, stage2-services-1440, stage2-features-1440, stage2-products-1440, stage2-blog-1440, stage2-careers-1440, stage2-contact-1440, stage2-home-mobile-390
+- All previous QA screenshots preserved
+
 ## Summary
 
 Implemented Step 4 of the Keplor V3 homepage experience: mobile hero repair, continuous scroll choreography, Predictive Arc brightness animation, ambient lighting shift, and reduced-motion support.

@@ -9,7 +9,7 @@ export default function AboutPage() {
       <PageHero
         eyebrow="About Keplor"
         title="Technology with purpose. <span class='accent'>Built for what's next.</span>"
-        body="Keplor delivers AI/ML and software solutions designed to help businesses navigate complexity, work more effectively, and build for the future."
+        body="Keplor helps businesses use AI/ML and custom software to work more effectively, make better decisions, and create room for innovation and growth."
       />
       <section className="section">
         <div className="belief">
@@ -29,13 +29,13 @@ export default function AboutPage() {
           <Reveal>
             <div>
               <h3>Our mission</h3>
-              <p>To empower businesses across sectors through AI/ML technologies and custom software solutions that drive innovation, efficiency, and growth.</p>
+              <p>To help businesses use AI/ML and custom software to work more effectively, make better decisions, and create room for innovation and growth.</p>
             </div>
           </Reveal>
           <Reveal delay={0.08}>
             <div>
               <h3>Our vision</h3>
-              <p>To deliver AI/ML-driven software solutions that help businesses navigate the digital future with intelligent, scalable, and data-driven strategies.</p>
+              <p>A future where organizations can use intelligent, scalable, data-informed technology to adapt and make progress.</p>
             </div>
           </Reveal>
         </div>

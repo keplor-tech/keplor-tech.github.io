@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { PageHero, ClosingCTA } from "@/components/Sections";
 import { motion } from "framer-motion";
+import caseStudies from "@/lib/content/case-studies";
 
 const principles = [
   {
@@ -312,6 +313,50 @@ function TeamValues() {
   );
 }
 
+function CaseStudies() {
+  return (
+    <section className="case-studies" aria-labelledby="case-studies-heading">
+      <div className="container">
+        <div className="section-head">
+          <div className="section-index">
+            <span>05</span>
+            <span>WORK</span>
+          </div>
+          <div>
+            <h2 id="case-studies-heading" className="section-title">
+              Illustrative <em>project scenarios</em>.
+            </h2>
+            <p className="section-intro">
+              The following are fictional scenarios created for design demonstration.
+              They are not genuine client engagements.
+            </p>
+          </div>
+        </div>
+        <div className="case-study-grid">
+          {caseStudies.map((study) => (
+            <article key={study.id} className="case-study-card">
+              <div className="case-study-meta">
+                <span className="case-study-label">{study.label}</span>
+                <span className="case-study-context">{study.context}</span>
+              </div>
+              <h3>{study.title}</h3>
+              <p className="case-study-problem">{study.problem}</p>
+              <p className="case-study-approach">{study.approach}</p>
+              <p className="case-study-solution">{study.solution}</p>
+              <p className="case-study-outcome">{study.outcome}</p>
+              <div className="case-study-themes">
+                {study.themes.map((theme) => (
+                  <span key={theme} className="theme-tag">{theme}</span>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function AboutPage() {
   useEffect(() => {
     const reveals = document.querySelectorAll('.reveal, .stagger-children');
@@ -329,15 +374,16 @@ export default function AboutPage() {
 
   return (
     <>
-      <PageHero 
-        label="ABOUT KEPLOR" 
-        title="Build with purpose. Think beyond the obvious." 
-        description="We bring research, design, and engineering together to help solve meaningful problems with intelligent technology."
+      <PageHero
+        label="ABOUT KEPLOR"
+        title="Technology with purpose. Built for what's next."
+        description="Keplor delivers AI/ML and software solutions designed to help businesses navigate complexity, work more effectively, and build for the future."
       />
       <MissionVision />
       <PrinciplesSection />
       <ProcessNarrative />
       <TeamValues />
+      <CaseStudies />
       <ClosingCTA />
     </>
   );

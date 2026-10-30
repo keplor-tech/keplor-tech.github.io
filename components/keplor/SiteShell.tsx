@@ -1,17 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Ambient } from './Ambient';
 import { CustomCursor } from './CustomCursor';
 
 const links = [
-  ['/services', 'Services'],
-  ['/industries', 'Industries'],
-  ['/approach', 'Approach'],
+  ['/', 'Home'],
   ['/about', 'About'],
+  ['/services', 'Services'],
+  ['/features', 'Features'],
+  ['/products', 'Products'],
+  ['/blog', 'Blog'],
+  ['/careers', 'Careers'],
   ['/contact', 'Contact'],
 ];
 
@@ -19,9 +21,8 @@ const footerNav = [
   ['/', 'Home'],
   ['/about', 'About'],
   ['/features', 'Features'],
+  ['/products', 'Products'],
   ['/blog', 'Blog'],
-  ['/services', 'Services'],
-  ['/testimonials', 'Testimonials'],
   ['/careers', 'Careers'],
   ['/contact', 'Contact'],
 ];
@@ -37,7 +38,6 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const reduced = useReducedMotion();
-  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -59,7 +59,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           {links.map(([href, label]) => (
             <Link key={href} href={href} onClick={() => setOpen(false)}>{label}</Link>
           ))}
-          <Link className="nav-cta" href="/contact" onClick={() => setOpen(false)}>Let's talk <span>↗</span></Link>
+          <Link className="nav-cta" href="/contact" onClick={() => setOpen(false)}>Discuss a project <span>↗</span></Link>
         </nav>
         <button
           className="menu-toggle"
@@ -71,17 +71,15 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         </button>
       </header>
 
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.main
-          key={pathname}
-          initial={reduced ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reduced ? undefined : { opacity: 0, y: -6 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {children}
-        </motion.main>
-      </AnimatePresence>
+      <motion.div
+        initial={reduced ? false : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={reduced ? undefined : { opacity: 0, y: -6 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        className="page-transition"
+      >
+        {children}
+      </motion.div>
 
       <footer className="site-footer">
         <div className="footer-grid">
