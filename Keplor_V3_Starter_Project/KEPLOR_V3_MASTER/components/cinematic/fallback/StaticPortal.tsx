@@ -9,7 +9,7 @@ export function StaticPortal({ className = "" }: { className?: string }) {
 
   useEffect(() => {
     const canvasEl = canvasRef.current;
-    if (!canvasEl || reducedMotion) return;
+    if (!canvasEl) return;
     const ctx = canvasEl.getContext("2d");
     if (!ctx) return;
 
@@ -32,7 +32,11 @@ export function StaticPortal({ className = "" }: { className?: string }) {
       context.fillStyle = "#050507";
       context.fillRect(0, 0, width, height);
 
-      time += 0.015;
+      // Only animate if NOT reduced motion
+      if (!reducedMotion) {
+        time += 0.015;
+      }
+      
       const cx = width / 2;
       const cy = height * 0.35;
       const arcWidth = width * 0.9;
@@ -47,9 +51,14 @@ export function StaticPortal({ className = "" }: { className?: string }) {
           const thickness = 140 + (1 - Math.abs(normX)) * 80;
           if (dist >= thickness) continue;
           let intensity = 1 - dist / thickness;
-          const waveX = Math.sin(x * 0.015 + time);
-          const waveY = Math.cos(y * 0.02 + time);
-          intensity = intensity * 0.7 + waveX * waveY * 0.3 * intensity;
+          
+          // Only add wave animation if NOT reduced motion
+          if (!reducedMotion) {
+            const waveX = Math.sin(x * 0.015 + time);
+            const waveY = Math.cos(y * 0.02 + time);
+            intensity = intensity * 0.7 + waveX * waveY * 0.3 * intensity;
+          }
+          
           intensity *= Math.max(0, 1 - Math.pow(Math.abs(normX), 2.5));
           if (intensity <= 0.02) continue;
 
@@ -64,11 +73,17 @@ export function StaticPortal({ className = "" }: { className?: string }) {
       }
       context.globalCompositeOperation = "source-over";
 
-      animationFrame = requestAnimationFrame(draw);
+      if (!reducedMotion) {
+        animationFrame = requestAnimationFrame(draw);
+      }
     }
 
     draw();
-    return () => cancelAnimationFrame(animationFrame);
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
   }, [reducedMotion]);
 
   return (

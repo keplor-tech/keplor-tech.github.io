@@ -3,7 +3,7 @@ import products from "@/lib/content/products";
 import ProductCard from "@/components/products/ProductCard";
 
 export const metadata = {
-  title: "Products — Keplor",
+  title: "Products",
   description: "Illustrative product concepts from Keplor. Concept previews for design demonstration.",
 };
 

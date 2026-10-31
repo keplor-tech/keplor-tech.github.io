@@ -74,7 +74,7 @@ void main() {
     toPos = aOrbit;
   }
 
-  float eased = smoothstep(uLocalProgress);
+  float eased = smoothstep(0.0, 1.0, uLocalProgress);
   vec3 position = mix(fromPos, toPos, eased);
 
   // Add low-amplitude continuous movement
@@ -92,5 +92,5 @@ void main() {
   vColor = mix(vec3(0.21, 0.0, 0.43), vec3(0.29, 0.87, 0.94), isSignal);
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = (6.0 * (1.0 - smoothstep(-3.0, 3.0, vDepth) * 0.4)) / (position.length + 1.0) * uPixelRatio;
+  gl_PointSize = (6.0 * (1.0 - smoothstep(-3.0, 3.0, vDepth) * 0.4)) / (length(position) + 1.0) * uPixelRatio;
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import * as THREE from "three";
 import {
   PerspectiveCamera,
   Points,
@@ -85,7 +86,7 @@ void main() {
     toPos = aOrbit;
   }
 
-  float eased = smoothstep(uLocalProgress);
+  float eased = smoothstep(0.0, 1.0, uLocalProgress);
   vec3 position = mix(fromPos, toPos, eased);
   position += lowAmplitudeFlow(aSeed, uTime, currentStage);
   position *= uFormationScale;
@@ -97,7 +98,7 @@ void main() {
   vColor = mix(vec3(0.21, 0.0, 0.43), vec3(0.29, 0.87, 0.94), isSignal);
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = (6.0 * (1.0 - smoothstep(-3.0, 3.0, vDepth) * 0.4)) / (position.length + 1.0) * uPixelRatio;
+  gl_PointSize = (6.0 * (1.0 - smoothstep(-3.0, 3.0, vDepth) * 0.4)) / (length(position) + 1.0) * uPixelRatio;
 }
 `;
 
@@ -117,6 +118,80 @@ void main() {
   gl_FragColor = vec4(color, alpha);
 }
 `;
+
+// Camera positions for each stage
+const CAMERA_STAGES = [
+  // Stage 0: Portal - Hero (slightly pulled back, looking at center)
+  { position: new THREE.Vector3(0, 0, 7), rotation: new THREE.Euler(0, 0, 0), fov: 45 },
+  // Stage 1: Neural Helix - Services (move closer, slight angle)
+  { position: new THREE.Vector3(0.5, 0.3, 5.5), rotation: new THREE.Euler(-0.05, 0.1, 0), fov: 42 },
+  // Stage 2: Wave Horizon - Industries (wider view, lower)
+  { position: new THREE.Vector3(0, -0.5, 6), rotation: new THREE.Euler(0.1, 0, 0), fov: 48 },
+  // Stage 3: Gravitational Vortex - Approach (closer, looking down into vortex)
+  { position: new THREE.Vector3(0, 0.2, 4.5), rotation: new THREE.Euler(0.15, 0.05, 0), fov: 40 },
+  // Stage 4: Orbital Formation - About/Contact (pulled back, orbital view)
+  { position: new THREE.Vector3(0, 0.5, 7.5), rotation: new THREE.Euler(-0.05, -0.1, 0), fov: 50 },
+];
+
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+function lerpVec3(a: THREE.Vector3, b: THREE.Vector3, t: number, out: THREE.Vector3): THREE.Vector3 {
+  out.x = lerp(a.x, b.x, t);
+  out.y = lerp(a.y, b.y, t);
+  out.z = lerp(a.z, b.z, t);
+  return out;
+}
+
+function lerpEuler(a: THREE.Euler, b: THREE.Euler, t: number, out: THREE.Euler): THREE.Euler {
+  out.x = lerp(a.x, b.x, t);
+  out.y = lerp(a.y, b.y, t);
+  out.z = lerp(a.z, b.z, t);
+  return out;
+}
+
+function CameraController({
+  scrollProgress,
+  stage,
+  localProgress,
+}: {
+  scrollProgress: number;
+  stage: number;
+  localProgress: number;
+}) {
+  const { camera } = useThree();
+  const perspCamera = camera as THREE.PerspectiveCamera;
+  const targetPosition = useRef(new THREE.Vector3());
+  const targetRotation = useRef(new THREE.Euler());
+  let targetFov = 45;
+
+  useFrame(() => {
+    // Determine current and next camera stage
+    const currentStage = Math.floor(stage);
+    const nextStage = Math.min(currentStage + 1, CAMERA_STAGES.length - 1);
+    
+    const currentCam = CAMERA_STAGES[currentStage];
+    const nextCam = CAMERA_STAGES[nextStage];
+    
+    // Smooth interpolation between camera stages
+    const eased = localProgress; // Already eased in shader, use linear here for camera
+    
+    lerpVec3(currentCam.position, nextCam.position, eased, targetPosition.current);
+    lerpEuler(currentCam.rotation, nextCam.rotation, eased, targetRotation.current);
+    targetFov = lerp(currentCam.fov, nextCam.fov, eased);
+    
+    // Apply camera transform
+    perspCamera.position.lerp(targetPosition.current, 0.1); // Smooth follow
+    perspCamera.rotation.x = THREE.MathUtils.lerp(perspCamera.rotation.x, targetRotation.current.x, 0.1);
+    perspCamera.rotation.y = THREE.MathUtils.lerp(perspCamera.rotation.y, targetRotation.current.y, 0.1);
+    perspCamera.rotation.z = THREE.MathUtils.lerp(perspCamera.rotation.z, targetRotation.current.z, 0.1);
+    perspCamera.fov = THREE.MathUtils.lerp(perspCamera.fov, targetFov, 0.1);
+    perspCamera.updateProjectionMatrix();
+  });
+
+  return null;
+}
 
 function FrameUpdater({
   scrollProgress,
@@ -255,6 +330,11 @@ export function MasterParticleScene({
           }}
         />
       </points>
+      <CameraController
+        scrollProgress={scrollProgress}
+        stage={stage}
+        localProgress={localProgress}
+      />
       <FrameUpdater
         scrollProgress={scrollProgress}
         stage={stage}

@@ -4,7 +4,7 @@ import { PageHero } from "@/components/Sections";
 import careers from "@/lib/content/careers";
 
 export const metadata: Metadata = {
-  title: "Careers — Keplor",
+  title: "Careers",
   description: "Sample role listings from Keplor. Illustrative content for design demonstration.",
 };
 

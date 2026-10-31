@@ -45,6 +45,30 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const revealElements = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
+    if (revealElements.length === 0) return;
+
+    if (!("IntersectionObserver" in window)) {
+      revealElements.forEach((element) => element.classList.add("visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -8% 0px" }
+    );
+
+    revealElements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  useEffect(() => {
     const yearEl = document.getElementById("year");
     if (yearEl && !yearEl.textContent) {
       yearEl.textContent = new Date().getFullYear().toString();

@@ -21,20 +21,24 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="product-meta">
         <span className="product-audience">{product.audience}</span>
       </div>
-      <div className="product-features">
-        <h3>Key features</h3>
-        <ul>
-          {product.features.map((feature) => (
-            <li key={feature.title}>
-              <strong>{feature.title}.</strong> {feature.description}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="product-use-case">
-        <h3>Example use case</h3>
-        <p>{product.useCase}</p>
-      </div>
+      {expanded && (
+        <div className="product-details">
+          <div className="product-features">
+            <h3>Key features</h3>
+            <ul>
+              {product.features.map((feature) => (
+                <li key={feature.title}>
+                  <strong>{feature.title}.</strong> {feature.description}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="product-use-case">
+            <h3>Example use case</h3>
+            <p>{product.useCase}</p>
+          </div>
+        </div>
+      )}
       <button
         className="product-toggle"
         onClick={() => setExpanded((prev) => !prev)}

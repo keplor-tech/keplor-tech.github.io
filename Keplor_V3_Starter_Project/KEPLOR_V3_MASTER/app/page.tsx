@@ -7,28 +7,13 @@ import { useReducedMotion } from "@/lib/motion";
 import { MasterParticleScene } from "@/components/cinematic/particle/MasterParticleScene";
 import { StaticPortal } from "@/components/cinematic/fallback/StaticPortal";
 import { selectQualityTier, type QualityTier } from "@/lib/cinematic/quality-tiers";
-
-const SECTION_STAGES: Record<string, { stage: number }> = {
-  home: { stage: 0 },
-  services: { stage: 1 },
-  industries: { stage: 2 },
-  approach: { stage: 3 },
-  contact: { stage: 4 },
-};
-
-interface SectionProgress {
-  stage: number;
-  localProgress: number;
-}
+import { useContinuousScrollProgress } from "@/lib/cinematic/scroll-progress";
+import caseStudies from "@/lib/content/case-studies";
 
 export default function HomePage() {
   const reducedMotion = useReducedMotion();
   const [tierResolved, setTierResolved] = useState<QualityTier>("static");
   const [webglFailed, setWebglFailed] = useState(false);
-  const [sectionProgress, setSectionProgress] = useState<SectionProgress>({
-    stage: 0,
-    localProgress: 0,
-  });
 
   const handleWebGLError = useCallback(() => {
     setWebglFailed(true);
@@ -50,50 +35,19 @@ export default function HomePage() {
 
   const useWebGL = !reducedMotion && !webglFailed && tierResolved !== "static";
 
-  // Observe each section to compute scroll-driven stage progress
-  useEffect(() => {
-    if (reducedMotion || !useWebGL) return;
+    // Continuous scroll progress - replaces IntersectionObserver
+    const scrollProgress = useContinuousScrollProgress();
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const section = entry.target as HTMLElement;
-          const sectionId = section.id;
-          const stageInfo = SECTION_STAGES[sectionId];
-          if (!stageInfo || !entry.isIntersecting) return;
-
-          const rect = section.getBoundingClientRect();
-          const viewportHeight = window.innerHeight;
-          const sectionTop = rect.top;
-          const sectionBottom = rect.bottom;
-          const progress = Math.max(
-            0,
-            Math.min(1, (viewportHeight - sectionTop) / (viewportHeight + sectionBottom - sectionTop))
-          );
-          setSectionProgress({
-            stage: stageInfo.stage,
-            localProgress: progress,
-          });
-        });
-      },
-      { threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-
-    document.querySelectorAll("section[id]").forEach((el) => observer.observe(el as Element));
-
-    return () => observer.disconnect();
-  }, [reducedMotion, useWebGL]);
-
-  return (
+    return (
     <>
       {/* Single transparent WebGL canvas behind content */}
       {useWebGL && (
         <div className="cinematic-canvas-layer">
           <MasterParticleScene
             tier={tierResolved}
-            scrollProgress={sectionProgress.localProgress}
-            stage={sectionProgress.stage}
-            localProgress={sectionProgress.localProgress}
+                      scrollProgress={scrollProgress.progress}
+                      stage={scrollProgress.stage}
+                      localProgress={scrollProgress.localProgress}
             onWebGLError={handleWebGLError}
           />
         </div>
@@ -238,6 +192,39 @@ export default function HomePage() {
                 <span>→</span>
               </a>
             </div>
+          </div>
+        </section>
+
+        <section id="work" className="work-showcase" aria-labelledby="work-heading">
+          <div className="section-top reveal">
+            <div>
+              <div className="section-label">03 / Illustrative work</div>
+              <h2 id="work-heading" className="section-title">
+                Systems that make <span className="accent">progress visible.</span>
+              </h2>
+            </div>
+            <p className="section-intro">
+              Fictional project scenarios that show how Keplor connects research, engineering, and practical
+              outcomes without inventing client claims or metrics.
+            </p>
+          </div>
+          <div className="work-grid">
+            {caseStudies.map((study, index) => (
+              <article className="work-card reveal" key={study.id}>
+                <div className="work-card-top">
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <span>{study.context}</span>
+                </div>
+                <h3>{study.title}</h3>
+                <p>{study.outcome}</p>
+                <div className="work-tags">
+                  {study.themes.map((theme) => <span key={theme}>{theme}</span>)}
+                </div>
+                <Link className="text-link" href="/contact/">
+                  Discuss a similar challenge <span>→</span>
+                </Link>
+              </article>
+            ))}
           </div>
         </section>
 
