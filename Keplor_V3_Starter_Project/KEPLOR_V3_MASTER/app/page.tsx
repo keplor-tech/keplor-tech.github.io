@@ -61,7 +61,17 @@ export default function HomePage() {
             </div>
           </div>
           <div className="hero-visual">
-            <div className="arc-canvas" />
+            {useWebGL ? (
+              <MasterParticleScene
+                tier={tierResolved}
+                scrollProgress={scrollProgress.progress}
+                stage={scrollProgress.stage}
+                localProgress={scrollProgress.localProgress}
+                onWebGLError={handleWebGLError}
+              />
+            ) : (
+              <StaticPortal className="fallback-canvas" />
+            )}
           </div>
           <div className="hero-bottom">
             <div className="scroll-indicator">

@@ -29,8 +29,7 @@ export function StaticPortal({ className = "" }: { className?: string }) {
       canvas.style.height = height + "px";
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 
-      context.fillStyle = "#050507";
-      context.fillRect(0, 0, width, height);
+      // Transparent background — do not fill with opaque color
 
       // Only animate if NOT reduced motion
       if (!reducedMotion) {
@@ -91,7 +90,7 @@ export function StaticPortal({ className = "" }: { className?: string }) {
       ref={canvasRef}
       className={`static-portal ${className}`}
       aria-hidden="true"
-      style={{ width: "100%", height: "100%", display: "block", background: "#050507" }}
+      style={{ width: "100%", height: "100%", display: "block", background: "transparent" }}
     />
   );
 }
