@@ -18,10 +18,10 @@ const SECTION_STAGES: Record<string, { stage: number }> = {
 };
 
 export const services = [
-  ['01 / AI & ML', 'AI & Machine Learning', 'Predictive analytics, natural language processing, computer vision, recommendation systems, and intelligent automation.'],
-  ['02 / SOFTWARE', 'Custom Software', 'Tailored web, mobile, and enterprise applications shaped around specific business requirements.'],
-  ['03 / CLOUD', 'Cloud Solutions', 'Cloud infrastructure and applications, including scalable, hybrid, and multi-cloud architectures.'],
-  ['04 / DATA', 'Research & Analytics', 'Data science, visualization, reporting, real-time and batch processing, and research-driven models.'],
+  ['01', 'AI & Machine Learning', 'Intelligent automation. AI/ML, LLM integrations and applied machine learning.'],
+  ['02', 'Custom Software', 'Web platforms, business applications and tailored digital systems.'],
+  ['03', 'Cloud & Infrastructure', 'Cloud architecture, infrastructure, deployment and scalable systems.'],
+  ['04', 'Data & Analytics', 'Data pipelines, analytics, information extraction and decision support.'],
 ];
 
 export const industries = [
@@ -41,9 +41,9 @@ export const steps = [
 
 export function Hero({ 
   id, 
-  eyebrow = 'AI / SOFTWARE / DATA', 
-  title = 'Intelligent solutions for real business challenges.', 
-  body = 'Keplor helps businesses turn complex needs into practical AI/ML, custom software, cloud and analytics solutions — designed around the way work actually happens.' 
+  eyebrow = 'AI / SOFTWARE / SYSTEMS', 
+  title = 'Intelligent systems.<br>Built around your business', 
+  body = 'We design and build practical AI software and systems that help businesses operate better and prepare for what\'s next.' 
 }: { 
   id?: string; 
   eyebrow?: string; 
@@ -130,7 +130,7 @@ export function Hero({
         <Reveal delay={0.24}>
           <div className="hero-actions">
             <Link className="button button--primary" href="/contact" data-cursor="EXPLORE">Discuss a project <span>↗</span></Link>
-            <Link className="text-link" href="/services" data-cursor="OPEN">Explore capabilities <span>↓</span></Link>
+            <Link className="text-link" href="/services" data-cursor="OPEN">Explore our build <span>↓</span></Link>
           </div>
         </Reveal>
       </div>
@@ -146,6 +146,41 @@ export function Hero({
   );
 }
 
+
+export function PerspectiveBlock() {
+  return (
+    <section className="section perspective" id="perspective">
+      <div className="perspective-grid">
+        <div className="perspective-copy">
+          <Reveal>
+            <div className="section-label">Our perspective</div>
+            <h2 className="section-title">Technology should fit the <span className="accent">business.</span> Not the other way around.</h2>
+          </Reveal>
+        </div>
+        <div className="perspective-columns">
+          <Reveal delay={0.06}>
+            <div className="perspective-card">
+              <h3>Understand</h3>
+              <p>Start with the problem, not the technology.</p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.12}>
+            <div className="perspective-card">
+              <h3>Build with purpose</h3>
+              <p>Create solutions that solve real business needs.</p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.18}>
+            <div className="perspective-card">
+              <h3>Improve continuously</h3>
+              <p>Iterate, learn, and make systems better over time.</p>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export function PageHero({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) {
   return (

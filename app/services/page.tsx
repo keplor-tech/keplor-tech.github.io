@@ -8,8 +8,8 @@ export default function ServicesPage() {
     <>
       <PageHero
         eyebrow="Services"
-        title="Build the right system for the <span class='accent'>problem.</span>"
-        body="From early research to production-minded software, Keplor brings AI/ML, engineering, cloud, and analytics into one clear conversation."
+        title="From idea to <span className='accent'>intelligent systems.</span>"
+        body="A bespoke design to support your business needs."
       />
       <section className="section">
         <div className="services">

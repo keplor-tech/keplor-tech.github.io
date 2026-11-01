@@ -9,14 +9,32 @@ export default function AboutPage() {
     <>
       <PageHero
         eyebrow="About Keplor"
-        title="Technology with purpose. <span className='accent'>Built for what's next.</span>"
-        body="Keplor helps businesses use AI/ML and custom software to work more effectively, make better decisions, and create room for innovation and growth."
+        title="A technology company building <span className='accent'>practical intelligence.</span>"
+        body="The design, build and support of intelligent systems that solve real business problems."
       />
       <section className="section">
         <div className="belief">
           <Reveal>
             <div>
-              <div className="section-label">Who we are</div>
+              <div className="section-label">Our philosophy</div>
+              <div className="philosophy-grid">
+                <div className="philosophy-card">
+                  <h3>Practical</h3>
+                  <p>We focus on problems first and technology that fits them.</p>
+                </div>
+                <div className="philosophy-card">
+                  <h3>Responsible</h3>
+                  <p>Buildable, safe, and maintainable systems.</p>
+                </div>
+                <div className="philosophy-card">
+                  <h3>Long-term</h3>
+                  <p>Complete solutions that last.</p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <div>
               <p className="belief-copy">Keplor is an independent AI/ML and software-solutions company. We combine technical thinking with a practical understanding of business needs — turning ideas into intelligent, scalable, and data-driven solutions.</p>
             </div>
           </Reveal>

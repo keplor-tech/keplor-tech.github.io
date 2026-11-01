@@ -14,7 +14,7 @@ export default function BlogPage() {
     <>
       <PageHero
         eyebrow="Notes"
-        title="Ideas worth making <span class='accent'>practical.</span>"
+        title="Ideas, research and builds from <span className='accent'>Keplor.</span>"
         body="Original editorial notes on responsible AI/ML, software delivery, and the realities of working with data."
       />
       <section className="section">
