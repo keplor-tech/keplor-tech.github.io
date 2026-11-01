@@ -40,26 +40,6 @@ export default function HomePage() {
 
     return (
     <>
-      {/* Single transparent WebGL canvas behind content */}
-      {useWebGL && (
-        <div className="cinematic-canvas-layer">
-          <MasterParticleScene
-            tier={tierResolved}
-                      scrollProgress={scrollProgress.progress}
-                      stage={scrollProgress.stage}
-                      localProgress={scrollProgress.localProgress}
-            onWebGLError={handleWebGLError}
-          />
-        </div>
-      )}
-
-      {/* Fallback: static portal in hero only */}
-      {!useWebGL && (
-        <div className="cinematic-fallback-layer">
-          <StaticPortal className="fallback-canvas" />
-        </div>
-      )}
-
       <main id="home">
         <section className="hero" id="home" style={{ borderTop: 0 }}>
           <div className="hero-main">
@@ -79,6 +59,9 @@ export default function HomePage() {
                 Explore capabilities <span>←</span>
               </a>
             </div>
+          </div>
+          <div className="hero-visual">
+            <div className="arc-canvas" />
           </div>
           <div className="hero-bottom">
             <div className="scroll-indicator">
