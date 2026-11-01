@@ -9,9 +9,10 @@ export type ProductCardProps = {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const detailsId = `${product.id}-details`;
 
   return (
-    <article className="product-card" data-status={product.status}>
+    <article className="product-card" data-expanded={expanded}>
       <div className="product-header">
         <span className="product-status">{product.statusLabel}</span>
         <h2>{product.name}</h2>
@@ -21,7 +22,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="product-meta">
         <span className="product-audience">{product.audience}</span>
       </div>
-      <div className="product-features">
+      <div id={detailsId} className="product-features">
         <h3>Key features</h3>
         <ul>
           {product.features.map((feature) => (
@@ -39,6 +40,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         className="product-toggle"
         onClick={() => setExpanded((prev) => !prev)}
         aria-expanded={expanded}
+        aria-controls={detailsId}
       >
         {expanded ? "Show less" : "Show details"}
       </button>

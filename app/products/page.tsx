@@ -27,7 +27,7 @@ export default function ProductsPage() {
             </div>
           </Reveal>
         </div>
-        <div className="services">
+        <div className="products-grid">
           {products.map((product) => (
             <Reveal key={product.id} delay={0.05}>
               <ProductCard product={product} />

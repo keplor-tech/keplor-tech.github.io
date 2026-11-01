@@ -2,13 +2,14 @@
 
 import { PageHero } from '@/components/keplor/PageBlocks';
 import { Reveal } from '@/components/keplor/Reveal';
+import caseStudies from '@/lib/content/case-studies';
 
 export default function AboutPage() {
   return (
     <>
       <PageHero
         eyebrow="About Keplor"
-        title="Technology with purpose. <span class='accent'>Built for what's next.</span>"
+        title="Technology with purpose. <span className='accent'>Built for what's next.</span>"
         body="Keplor helps businesses use AI/ML and custom software to work more effectively, make better decisions, and create room for innovation and growth."
       />
       <section className="section">
@@ -38,6 +39,51 @@ export default function AboutPage() {
               <p>A future where organizations can use intelligent, scalable, data-informed technology to adapt and make progress.</p>
             </div>
           </Reveal>
+        </div>
+      </section>
+      <section className="section">
+        <div className="section-top">
+          <Reveal>
+            <div>
+              <div className="section-label">03 / Illustrative work</div>
+              <h2 className="section-title">Case studies — <span className="accent">illustrative scenarios.</span></h2>
+              <p className="section-intro">The following case studies are fictional project scenarios created for visual and content demonstration. They are not genuine Keplor client engagements. No client identities, verified metrics, or operational results are implied.</p>
+            </div>
+          </Reveal>
+        </div>
+        <div className="case-studies">
+          {caseStudies.map((study) => (
+            <Reveal key={study.id} delay={0.05}>
+              <article className="case-study-card">
+                <div className="case-study-meta">
+                  <span className="case-study-label">{study.label}</span>
+                  <h2>{study.title}</h2>
+                  <span className="case-study-context">{study.context}</span>
+                </div>
+                <div className="case-study-problem">
+                  <h3>Problem</h3>
+                  <p>{study.problem}</p>
+                </div>
+                <div className="case-study-approach">
+                  <h3>Proposed approach</h3>
+                  <p>{study.approach}</p>
+                </div>
+                <div className="case-study-solution">
+                  <h3>Solution concept</h3>
+                  <p>{study.solution}</p>
+                </div>
+                <div className="case-study-outcome">
+                  <h3>Intended outcome</h3>
+                  <p>{study.outcome}</p>
+                </div>
+                <div className="case-study-themes">
+                  {study.themes.map((theme) => (
+                    <span className="theme-tag" key={theme}>{theme}</span>
+                  ))}
+                </div>
+              </article>
+            </Reveal>
+          ))}
         </div>
       </section>
     </>

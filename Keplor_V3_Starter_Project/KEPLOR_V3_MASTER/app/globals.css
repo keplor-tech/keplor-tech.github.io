@@ -59,22 +59,11 @@
   --duration-slower: 600ms;
 
   /* Ambient lighting (animated via scroll) */
-  --ambient-light-violet: rgba(54, 0, 109, 0.18);
-  --ambient-light-indigo: rgba(27, 20, 53, 0.15);
-  --ambient-light-cyan: rgba(54, 0, 109, 0.08);
+    --ambient-light-violet: rgba(54, 0, 109, 0.18);
+    --ambient-light-indigo: rgba(27, 20, 53, 0.15);
+    --ambient-light-cyan: rgba(54, 0, 109, 0.08);
 
-  /* Ambient lighting overlay — real element so scroll-driven CSS vars can animate it */
-.ambient-light-overlay {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background: radial-gradient(ellipse at 85% 8%, var(--ambient-light-violet), transparent 42%),
-    radial-gradient(ellipse at 12% 55%, var(--ambient-light-indigo), transparent 40%),
-    radial-gradient(ellipse at 50% 100%, var(--ambient-light-cyan), transparent 55%);
-  transition: background 0.2s ease-out;
-}
-  --font-display: "Inter", "Segoe UI", system-ui, sans-serif;
+    --font-display: "Inter", "Segoe UI", system-ui, sans-serif;
   --text-xs: clamp(0.65rem, 0.6rem + 0.25vw, 0.75rem);
   --text-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.9rem);
   --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.1rem);
@@ -701,46 +690,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 /* ==========================================================================
-   Original prototype design system (restored)
+   Ambient lighting overlay (used by SiteShell)
    ========================================================================== */
-
-:root {
-  --kp-bg: #050507;
-  --kp-surface: #0a0a0e;
-  --kp-text: #f7f7fa;
-  --kp-muted: #aaaab7;
-  --kp-dim: #747482;
-  --kp-line: rgba(255, 255, 255, 0.15);
-  --kp-purple: #36006d;
-  --kp-violet: #a76aff;
-  --kp-cyan: #1689ce;
-  --kp-pad: clamp(24px, 6.2vw, 100px);
-  --kp-sans: Inter, "Helvetica Neue", Arial, sans-serif;
-}
-
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 88px;
-  overflow-x: hidden;
-}
-
-body {
-  margin: 0;
-  background: var(--kp-bg);
-  color: var(--kp-text);
-  font-family: var(--kp-sans);
-  font-weight: 400;
-  -webkit-font-smoothing: antialiased;
-}
-
-.grain {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
-}
 
 .ambient {
   position: fixed;
@@ -759,6 +710,148 @@ body {
   background: radial-gradient(
       ellipse 38% 39% at 82% 23%,
       rgba(0, 122, 213, 0.22),
+      transparent 78%
+    ),
+    radial-gradient(
+      ellipse 34% 42% at 98% 52%,
+      rgba(112, 28, 220, 0.18),
+      transparent 76%
+    ),
+    radial-gradient(
+      ellipse 32% 25% at 19% 80%,
+      rgba(0, 164, 191, 0.11),
+      transparent 78%
+    ),
+    radial-gradient(
+      ellipse 24% 32% at 67% 92%,
+      rgba(71, 25, 155, 0.12),
+      transparent 80%
+    );
+  transform: translate3d(var(--mx, 0), var(--my, 0), 0);
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ==========================================================================
+   Grain overlay
+   ========================================================================== */
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+}
+
+/* ==========================================================================
+   Site Shell (header, main, footer)
+   ========================================================================== */
+
+.site-shell {
+  min-height: 100vh;
+  overflow: clip;
+  position: relative;
+  isolation: isolate;
+}
+
+.site-shell::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(ellipse at 85% 8%, var(--ambient-light-violet), transparent 42%),
+    radial-gradient(ellipse at 12% 55%, var(--ambient-light-indigo), transparent 40%),
+    radial-gradient(ellipse at 50% 100%, var(--ambient-light-cyan), transparent 55%);
+}
+
+.site-header,
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--color-line);
+  background: rgba(5, 5, 7, 0.8);
+  backdrop-filter: blur(20px);
+}
+
+.header-inner {
+  min-height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  font-size: 1.35rem;
+  color: var(--color-text);
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.wordmark:hover {
+  opacity: 0.7;
+}
+
+/* Footer */
+.site-footer {
+  border-top: 1px solid var(--color-line);
+  padding: 2rem 0;
+  margin-top: auto;
+}
+
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  font-size: 1.1rem;
+  color: var(--color-text);
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.footer-nav a {
+  transition: color var(--duration-fast);
+}
+
+.footer-nav a:hover {
+  color: var(--color-text);
+}
+
+.footer-copy {
+  font: 0.625rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
       transparent 78%
     ),
     radial-gradient(
