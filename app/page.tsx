@@ -3,7 +3,7 @@ import { Hero, ServicesBlock, IndustriesBlock, ApproachBlock, AboutBlock, Contac
 export default function Home() {
   return (
     <>
-      <Hero />
+      <Hero id="home" />
       <ServicesBlock />
       <IndustriesBlock />
       <ApproachBlock />

@@ -39,7 +39,17 @@ export const steps = [
   ['04', 'Improve', 'We evaluate what works, refine the implementation, and plan next steps.'],
 ];
 
-export function Hero({ eyebrow = 'AI / SOFTWARE / DATA', title = 'Intelligent solutions for real business challenges.', body = 'Keplor helps businesses turn complex needs into practical AI/ML, custom software, cloud and analytics solutions — designed around the way work actually happens.' }: { eyebrow?: string; title?: string; body?: string }) {
+export function Hero({ 
+  id, 
+  eyebrow = 'AI / SOFTWARE / DATA', 
+  title = 'Intelligent solutions for real business challenges.', 
+  body = 'Keplor helps businesses turn complex needs into practical AI/ML, custom software, cloud and analytics solutions — designed around the way work actually happens.' 
+}: { 
+  id?: string; 
+  eyebrow?: string; 
+  title?: string; 
+  body?: string; 
+}) {
   const reducedMotion = useReducedMotion();
   const [tierResolved, setTierResolved] = useState<QualityTier>("static");
   const [webglFailed, setWebglFailed] = useState(false);
@@ -96,7 +106,7 @@ export function Hero({ eyebrow = 'AI / SOFTWARE / DATA', title = 'Intelligent so
   }, [reducedMotion, useWebGL]);
 
   return (
-    <section className="hero" id="home">
+      <section className="hero" id={id}>
       {/* Transparent WebGL Arc layer above CSS ambient background */}
       <div className="hero-arc-layer">
         {useWebGL ? (
